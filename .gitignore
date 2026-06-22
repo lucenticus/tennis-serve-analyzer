@@ -1,0 +1,34 @@
+# Android / Gradle
+*.iml
+.gradle/
+/local.properties
+.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Build output
+app/build/
+build/
+
+# Kotlin
+.kotlin/
+
+# Signing (never commit keystores)
+*.jks
+*.keystore
+keystore.properties
+
+# Python (ml/)
+__pycache__/
+*.pyc
+.venv/
+venv/
+ml/data/
+ml/*.mp4

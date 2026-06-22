@@ -1,0 +1,10 @@
+mediapipe==0.10.14
+opencv-python==4.10.0.84
+yt-dlp==2024.11.18
+numpy==1.26.4
+pandas==2.2.3
+torch==2.4.1
+tensorflow==2.16.1
+scikit-learn==1.5.2
+matplotlib==3.9.2
+tqdm==4.66.5
