@@ -348,6 +348,33 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                // Команды с часов (Wear OS пульт): START/STOP записи на телефоне
+                LaunchedEffect(Unit) {
+                    com.tennis.analyzer.wear.WearLink.onCommand = { path ->
+                        scope.launch(Dispatchers.Main) {
+                            when (path) {
+                                com.tennis.analyzer.wear.WearLink.PATH_START ->
+                                    if (!isRecording && !isAnalyzing && mode == AppMode.ANALYSIS) {
+                                        isRecording = true
+                                        currentlyRecording = true
+                                        serveRecorder.startRecording { _, _ -> }
+                                    }
+                                com.tennis.analyzer.wear.WearLink.PATH_STOP ->
+                                    if (isRecording) {
+                                        isRecording = false
+                                        currentlyRecording = false
+                                        serveRecorder.stopAndWait { file ->
+                                            launchAnalysis(
+                                                uri = android.net.Uri.fromFile(file),
+                                                setAnalyzing = { isAnalyzing = it },
+                                                setProgress = { analyzeProgress = it }
+                                            )
+                                        }
+                                    }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -385,14 +412,21 @@ class MainActivity : ComponentActivity() {
         // Фазы каждой подачи отдельно + IDLE-разрывы между ними
         val phases = detectAllServePhases(result.frames, result.serveContacts)
 
-        // Счёт сессии — добавляем оценку каждой подачи
+        // Счёт сессии — добавляем оценку каждой подачи; запоминаем последнюю для часов
+        var lastScore: Int? = null
+        var lastTip: String? = null
         for (window in serveWindows(result.frames, result.serveContacts)) {
             val sub = result.frames.filter { it.timestampMs in window.first..window.second }
             if (sub.size < 3) continue
-            val (metrics, _) = ServeAnalyzer.analyze(sub, isLeftHanded)
+            val (metrics, advice) = ServeAnalyzer.analyze(sub, isLeftHanded)
             recentScores.add(metrics.overallScore)
+            lastScore = metrics.overallScore.toInt()
+            lastTip = advice.firstOrNull()?.textRu
         }
         while (recentScores.size > 15) recentScores.removeAt(0)
+
+        // Отправляем результат на часы (если подключены)
+        lastScore?.let { com.tennis.analyzer.wear.WearLink.sendResult(this, it, lastTip) }
 
         AnalysisActivity.start(
             this@MainActivity,

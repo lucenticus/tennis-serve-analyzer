@@ -84,6 +84,9 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
+    // Канал связи с часами (Wear OS компаньон через Data Layer)
+    implementation("com.google.android.gms:play-services-wearable:18.2.0")
+
     // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
