@@ -10,7 +10,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -119,6 +123,7 @@ class MainActivity : ComponentActivity() {
             var leftHanded by remember { mutableStateOf(isLeftHanded) }
             var autoRecord by remember { mutableStateOf(false) }
             var mode by remember { mutableStateOf(AppMode.ANALYSIS) }
+            var showOnboarding by remember { mutableStateOf(!prefs.getBoolean("onboarding_done", false)) }
 
             // Включаем/выключаем реал-тайм трекинг при смене режима
             LaunchedEffect(mode) {
@@ -388,6 +393,14 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(mode, isRecording, isAnalyzing) {
                     framingActive = (mode == AppMode.ANALYSIS && !isRecording && !isAnalyzing)
                     if (!framingActive) lastFramingCode = ""
+                }
+
+                // Обучалка при первом запуске (поверх всего)
+                if (showOnboarding) {
+                    OnboardingOverlay(onDone = {
+                        showOnboarding = false
+                        prefs.edit().putBoolean("onboarding_done", true).apply()
+                    })
                 }
             }
         }
@@ -774,6 +787,62 @@ class MainActivity : ComponentActivity() {
         if (::poseDetector.isInitialized) poseDetector.close()
         videoAnalyzer.close()
         voice.shutdown()
+    }
+}
+
+@Composable
+private fun OnboardingOverlay(onDone: () -> Unit) {
+    data class Slide(val emoji: String, val title: String, val body: String)
+    val slides = listOf(
+        Slide("🎾", "Анализатор подачи",
+            "Снимай свою подачу — получай разбор по фазам, момент удара и советы, как улучшить технику."),
+        Slide("🔀", "Два режима",
+            "«Анализ» — запись и детальный разбор. «Реал-тайм» — живые подсказки голосом во время тренировки. Переключай вверху по центру."),
+        Slide("📹", "Как снимать",
+            "Поставь телефон боком к корту, лучше на штатив. Оставь место сверху — чтобы подброс мяча влез в кадр. Жми запись на экране или с часов."),
+        Slide("⌚", "Рука и часы",
+            "Укажи рабочую руку кнопкой ✋ справа вверху. С Galaxy Watch можно запускать запись и видеть оценку с подсказкой прямо на руке.")
+    )
+    var step by remember { mutableStateOf(0) }
+    val slide = slides[step]
+    Box(
+        Modifier.fillMaxSize().background(Color(0xF20A0A0A)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(slide.emoji, fontSize = 56.sp)
+            Text(slide.title, color = Color.White, fontSize = 22.sp,
+                fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+            Text(slide.body, color = Color(0xFFCCCCCC), fontSize = 15.sp,
+                textAlign = TextAlign.Center, lineHeight = 21.sp)
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                slides.indices.forEach { i ->
+                    Box(Modifier.size(8.dp).clip(CircleShape)
+                        .background(if (i == step) Color(0xFF7CB342) else Color(0xFF444444)))
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = { if (step < slides.lastIndex) step++ else onDone() },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7CB342)),
+                modifier = Modifier.fillMaxWidth(0.7f).height(48.dp),
+                shape = RoundedCornerShape(24.dp)
+            ) {
+                Text(if (step < slides.lastIndex) "Далее" else "Начать",
+                    fontSize = 16.sp, color = Color.White)
+            }
+            if (step < slides.lastIndex) {
+                Text("Пропустить", color = Color(0xFF888888), fontSize = 13.sp,
+                    modifier = Modifier.clickable { onDone() })
+            } else {
+                Spacer(Modifier.height(19.dp))
+            }
+        }
     }
 }
 
