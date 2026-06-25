@@ -69,6 +69,7 @@ class WearMainActivity : ComponentActivity() {
     private var lastScore by mutableStateOf<Int?>(null)
     private var lastTip by mutableStateOf<String?>(null)
     private var noServe by mutableStateOf(false)
+    private var framing by mutableStateOf("")   // код кадрирования с телефона
 
     private val handler = Handler(Looper.getMainLooper())
     private val analyzeTimeout = Runnable {
@@ -80,6 +81,7 @@ class WearMainActivity : ComponentActivity() {
 
     private val msgListener = MessageClient.OnMessageReceivedListener { event ->
         when (event.path) {
+            WearComm.PATH_FRAMING -> framing = String(event.data)
             WearComm.PATH_PROGRESS -> {
                 analyzing = true
                 isRecording = false
@@ -120,7 +122,7 @@ class WearMainActivity : ComponentActivity() {
                         noServe -> NoServeScreen(onRetry = { resetResult(); if (mode == "ANALYSIS") toggleRecording() })
                         isRecording -> RecordingScreen(onStop = { toggleRecording() })
                         else -> IdleScreen(
-                            mode = mode, status = status, connected = connected,
+                            mode = mode, status = status, connected = connected, framing = framing,
                             onStart = { if (mode == "ANALYSIS") toggleRecording() },
                             onToggleMode = { switchMode() }
                         )
@@ -198,7 +200,7 @@ class WearMainActivity : ComponentActivity() {
 
 @Composable
 private fun IdleScreen(
-    mode: String, status: String, connected: Boolean,
+    mode: String, status: String, connected: Boolean, framing: String,
     onStart: () -> Unit, onToggleMode: () -> Unit
 ) {
     Column(
@@ -207,21 +209,20 @@ private fun IdleScreen(
         verticalArrangement = Arrangement.Center
     ) {
         ModeChip(mode, onToggleMode)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
         if (mode == "ANALYSIS") {
             Button(
                 onClick = onStart,
-                modifier = Modifier.size(78.dp),
+                modifier = Modifier.size(72.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Green)
             ) {
-                Box(Modifier.size(26.dp).clip(CircleShape).background(Color.White))
+                Box(Modifier.size(24.dp).clip(CircleShape).background(Color.White))
             }
-            Spacer(Modifier.height(12.dp))
-            Text(
-                if (!connected) "Телефон не найден" else status,
-                color = if (!connected) Red else Color(0xFFBDBDBD),
-                fontSize = 13.sp, textAlign = TextAlign.Center
-            )
+            Spacer(Modifier.height(10.dp))
+            // Подсказка кадрирования (где встать / влезет ли подброс)
+            val (fText, fColor) = framingHint(framing, connected, status)
+            Text(fText, color = fColor, fontSize = 12.5.sp, textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium)
         } else {
             Text("Реал-тайм", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
@@ -353,4 +354,17 @@ private fun scoreColor(score: Int): Color = when {
     score >= 75 -> Color(0xFF66BB6A)
     score >= 50 -> Amber
     else -> Red
+}
+
+/** Текст и цвет подсказки кадрирования по коду с телефона. */
+private fun framingHint(code: String, connected: Boolean, fallback: String): Pair<String, Color> {
+    if (!connected) return "Телефон не найден" to Red
+    return when (code) {
+        WearComm.FRAME_OK          -> "✓ Кадр в порядке" to Color(0xFF66BB6A)
+        WearComm.FRAME_NO_PERSON   -> "Встань в кадр" to Color(0xFFBDBDBD)
+        WearComm.FRAME_MOVE_BACK   -> "↔ Отойди — не\nпомещаешься целиком" to Amber
+        WearComm.FRAME_MOVE_CLOSER -> "→ Подойди ближе" to Amber
+        WearComm.FRAME_LOW_TOSS    -> "↑ Мало места сверху —\nподброс не влезет" to Amber
+        else                       -> fallback to Color(0xFFBDBDBD)
+    }
 }

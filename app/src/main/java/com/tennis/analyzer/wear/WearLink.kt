@@ -16,6 +16,14 @@ object WearLink {
     const val PATH_MODE     = "/serve/mode"      // payload: "ANALYSIS" | "REALTIME"
     const val PATH_PROGRESS = "/serve/progress"  // payload: "0".."100"
     const val PATH_RESULT   = "/serve/result"    // payload: "score|tip" (score<0 = подача не распознана)
+    const val PATH_FRAMING  = "/serve/framing"   // payload: код кадрирования (см. ниже)
+
+    // Коды кадрирования (помощь «где встать», в т.ч. видимость подброса)
+    const val FRAME_OK         = "OK"          // кадр в порядке
+    const val FRAME_NO_PERSON  = "NO_PERSON"   // не вижу человека
+    const val FRAME_MOVE_BACK  = "MOVE_BACK"   // не помещаешься целиком
+    const val FRAME_MOVE_CLOSER= "MOVE_CLOSER" // слишком далеко
+    const val FRAME_LOW_TOSS   = "LOW_TOSS"    // мало места сверху — подброс не влезет
 
     /** Установить из MainActivity. Получает (path, payload) команды с часов. */
     @Volatile
@@ -24,6 +32,11 @@ object WearLink {
     /** Процент прогресса анализа на часы (0..100). */
     fun sendProgress(context: Context, percent: Int) {
         send(context, PATH_PROGRESS, percent.coerceIn(0, 100).toString())
+    }
+
+    /** Статус кадрирования на часы (помощь «где встать»). */
+    fun sendFraming(context: Context, code: String) {
+        send(context, PATH_FRAMING, code)
     }
 
     /** Итог анализа на часы. score<0 → «подача не распознана». Всегда вызывать в конце анализа. */

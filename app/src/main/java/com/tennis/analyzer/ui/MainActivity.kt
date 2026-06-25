@@ -72,6 +72,11 @@ class MainActivity : ComponentActivity() {
     private var realtimeDetector: ServePhaseDetector? = null
     private var skeletonOverlay: SkeletonOverlay? = null
     private var lastRealtimePoseMs = 0L
+
+    // Помощь кадрирования для часов (где встать, влезет ли подброс)
+    private var framingActive = false
+    private var lastFramingPoseMs = 0L
+    private var lastFramingCode = ""
     private val realtimePhase = mutableStateOf(ServePhase.IDLE)
     private val realtimeServeCount = mutableStateOf(0)
 
@@ -379,6 +384,11 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                // Помощь кадрирования активна, когда стоишь в «Анализ» и ещё не пишешь
+                LaunchedEffect(mode, isRecording, isAnalyzing) {
+                    framingActive = (mode == AppMode.ANALYSIS && !isRecording && !isAnalyzing)
+                    if (!framingActive) lastFramingCode = ""
+                }
             }
         }
     }
@@ -516,6 +526,11 @@ class MainActivity : ComponentActivity() {
                         lastPoseDetectMs = now
                         poseDetector.detectAsync(bitmap, ts)
                     }
+                    // Помощь кадрирования (для часов) — пока стоишь и целишься
+                    framingActive && now - lastFramingPoseMs > 250L -> {
+                        lastFramingPoseMs = now
+                        poseDetector.detectAsync(bitmap, ts)
+                    }
                 }
             }
         ).also { it.start() }
@@ -523,6 +538,39 @@ class MainActivity : ComponentActivity() {
 
     // Called from compose to trigger auto-record start
     var onAutoRecordStart: (() -> Unit)? = null
+
+    /**
+     * Оценивает кадрирование для часов: видно ли игрока целиком и хватит ли места
+     * сверху для подброса (мяч уходит высоко над головой — нужно «небо» в кадре).
+     */
+    private fun computeFraming(frame: com.tennis.analyzer.pose.PoseFrame): String {
+        val lm = frame.landmarks
+        if (lm.size < 29) return com.tennis.analyzer.wear.WearLink.FRAME_NO_PERSON
+        val nose = lm.getOrNull(0) ?: return com.tennis.analyzer.wear.WearLink.FRAME_NO_PERSON
+        val lSh = lm.getOrNull(11); val rSh = lm.getOrNull(12)
+        val lHip = lm.getOrNull(23); val rHip = lm.getOrNull(24)
+        val lAnk = lm.getOrNull(27); val rAnk = lm.getOrNull(28)
+        if (lSh == null || rSh == null || lAnk == null || rAnk == null)
+            return com.tennis.analyzer.wear.WearLink.FRAME_NO_PERSON
+
+        val shY  = (lSh.y + rSh.y) / 2f
+        val hipY = ((lHip?.y ?: shY) + (rHip?.y ?: shY)) / 2f
+        val headY  = nose.y
+        val ankleY = maxOf(lAnk.y, rAnk.y)        // самая нижняя стопа
+        val bodyHeight = ankleY - headY
+
+        // Похоже ли на стоящего человека (голова выше плеч выше бёдер)
+        if (bodyHeight < 0.15f || headY > shY || shY > hipY)
+            return com.tennis.analyzer.wear.WearLink.FRAME_NO_PERSON
+
+        return when {
+            ankleY > 0.98f || bodyHeight > 0.92f -> com.tennis.analyzer.wear.WearLink.FRAME_MOVE_BACK
+            bodyHeight < 0.35f                   -> com.tennis.analyzer.wear.WearLink.FRAME_MOVE_CLOSER
+            // Места над головой (headY от верха кадра) мало для подброса
+            headY < 0.30f                        -> com.tennis.analyzer.wear.WearLink.FRAME_LOW_TOSS
+            else                                 -> com.tennis.analyzer.wear.WearLink.FRAME_OK
+        }
+    }
 
     // ── Реал-тайм режим: живой детектор фаз + голосовые подсказки ──────────────
     private fun startRealtime() {
@@ -574,6 +622,15 @@ class MainActivity : ComponentActivity() {
         if (realtimeActive) {
             realtimeDetector?.process(frame)
             scope.launch(Dispatchers.Main) { skeletonOverlay?.update(frame, realtimePhase.value) }
+            return
+        }
+        // Помощь кадрирования — считаем статус и шлём на часы (только при изменении)
+        if (framingActive) {
+            val code = computeFraming(frame)
+            if (code != lastFramingCode) {
+                lastFramingCode = code
+                com.tennis.analyzer.wear.WearLink.sendFraming(this, code)
+            }
             return
         }
         if (!autoRecordActive || currentlyRecording) return
