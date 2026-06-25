@@ -319,6 +319,18 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 Text("📂  Загрузить из галереи", fontSize = 16.sp)
                             }
+
+                            // История подач + сравнение
+                            OutlinedButton(
+                                onClick = {
+                                    startActivity(android.content.Intent(this@MainActivity, HistoryActivity::class.java))
+                                },
+                                shape = RoundedCornerShape(28.dp),
+                                modifier = Modifier.height(48.dp).widthIn(min = 220.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                            ) {
+                                Text("📊  История и сравнение", fontSize = 16.sp)
+                            }
                         }
 
                         // Сигнал авто-записи — если auto-record включён и идёт запись (поднята рука)
@@ -406,6 +418,30 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /** Копирует видео в постоянное хранилище и пишет запись в историю. */
+    private fun saveServeToHistory(srcVideo: java.io.File, score: Int, tip: String?, durationMs: Long) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val dir = java.io.File(filesDir, "serves").apply { mkdirs() }
+                val dst = java.io.File(dir, "serve_${System.currentTimeMillis()}.mp4")
+                srcVideo.copyTo(dst, overwrite = true)
+                com.tennis.analyzer.data.TrainingDatabase.get(this@MainActivity).historyDao().insert(
+                    com.tennis.analyzer.data.ServeHistoryEntry(
+                        createdMs = System.currentTimeMillis(),
+                        videoPath = dst.absolutePath,
+                        score = score,
+                        tip = tip,
+                        isLeftHanded = isLeftHanded,
+                        durationMs = durationMs
+                    )
+                )
+                Log.i("MainActivity", "Serve saved to history: ${dst.name}")
+            } catch (e: Exception) {
+                Log.w("MainActivity", "saveServeToHistory failed: ${e.message}")
+            }
+        }
+    }
+
     private fun launchAnalysis(
         uri: Uri,
         setAnalyzing: (Boolean) -> Unit,
@@ -460,6 +496,9 @@ class MainActivity : ComponentActivity() {
         // Всегда шлём итог на часы — иначе экран «Анализ» на часах висит вечно.
         // Если подача не распозналась (lastScore null) → score=-1.
         com.tennis.analyzer.wear.WearLink.sendResult(this, lastScore ?: -1, lastTip)
+
+        // Сохраняем подачу в историю (видео + оценка), если распознана
+        lastScore?.let { sc -> saveServeToHistory(videoFile, sc, lastTip, result.videoDurationMs) }
 
         AnalysisActivity.start(
             this@MainActivity,

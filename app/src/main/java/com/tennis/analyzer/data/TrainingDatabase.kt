@@ -25,6 +25,33 @@ data class TrainingSession(
     val avgScore: Float
 )
 
+/** Запись подачи в истории: видео + оценка + совет (для просмотра и сравнения). */
+@Entity(tableName = "serve_history")
+data class ServeHistoryEntry(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val createdMs: Long,        // когда записана
+    val videoPath: String,      // постоянный путь к видео
+    val score: Int,             // оценка 0..100
+    val tip: String?,           // главный совет
+    val isLeftHanded: Boolean,
+    val durationMs: Long
+)
+
+@Dao
+interface HistoryDao {
+    @Insert
+    suspend fun insert(entry: ServeHistoryEntry): Long
+
+    @Query("SELECT * FROM serve_history ORDER BY createdMs DESC")
+    fun all(): Flow<List<ServeHistoryEntry>>
+
+    @Query("SELECT * FROM serve_history WHERE id IN (:ids)")
+    suspend fun byIds(ids: List<Long>): List<ServeHistoryEntry>
+
+    @Delete
+    suspend fun delete(entry: ServeHistoryEntry)
+}
+
 @Dao
 interface ServeDao {
     @Insert
@@ -50,13 +77,14 @@ interface SessionDao {
 }
 
 @Database(
-    entities = [ServeResult::class, TrainingSession::class],
-    version = 1,
+    entities = [ServeResult::class, TrainingSession::class, ServeHistoryEntry::class],
+    version = 2,
     exportSchema = false
 )
 abstract class TrainingDatabase : RoomDatabase() {
     abstract fun serveDao(): ServeDao
     abstract fun sessionDao(): SessionDao
+    abstract fun historyDao(): HistoryDao
 
     companion object {
         @Volatile private var INSTANCE: TrainingDatabase? = null
@@ -64,6 +92,7 @@ abstract class TrainingDatabase : RoomDatabase() {
         fun get(context: android.content.Context): TrainingDatabase =
             INSTANCE ?: synchronized(this) {
                 Room.databaseBuilder(context, TrainingDatabase::class.java, "training.db")
+                    .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }
             }
