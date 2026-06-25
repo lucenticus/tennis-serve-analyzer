@@ -116,10 +116,9 @@ class WearMainActivity : ComponentActivity() {
                         analyzing -> AnalyzingScreen(progress)
                         lastScore != null -> ResultScreen(
                             score = lastScore!!, tip = lastTip,
-                            onAgain = { resetResult(); if (mode == "ANALYSIS") toggleRecording() },
-                            onClose = { resetResult() }
+                            onBack = { resetResult() }                 // вернуться к экрану записи
                         )
-                        noServe -> NoServeScreen(onRetry = { resetResult(); if (mode == "ANALYSIS") toggleRecording() })
+                        noServe -> NoServeScreen(onRetry = { resetResult() })
                         isRecording -> RecordingScreen(onStop = { toggleRecording() })
                         else -> IdleScreen(
                             mode = mode, status = status, connected = connected, framing = framing,
@@ -289,7 +288,7 @@ private fun AnalyzingScreen(progress: Float) {
 }
 
 @Composable
-private fun ResultScreen(score: Int, tip: String?, onAgain: () -> Unit, onClose: () -> Unit) {
+private fun ResultScreen(score: Int, tip: String?, onBack: () -> Unit) {
     val color = scoreColor(score)
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
@@ -299,29 +298,30 @@ private fun ResultScreen(score: Int, tip: String?, onAgain: () -> Unit, onClose:
             indicatorColor = color, trackColor = Track, strokeWidth = 8.dp
         )
         Column(
-            Modifier.padding(horizontal = 40.dp),
+            Modifier.padding(horizontal = 36.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("$score", color = Color.White, fontSize = 46.sp, fontWeight = FontWeight.Bold)
+            Text("$score", color = Color.White, fontSize = 42.sp, fontWeight = FontWeight.Bold)
             Text("из 100", color = Color(0xFF9E9E9E), fontSize = 11.sp)
             tip?.let {
-                Spacer(Modifier.height(6.dp))
-                Text(it, color = Amber, fontSize = 12.sp, textAlign = TextAlign.Center, maxLines = 3)
+                Spacer(Modifier.height(4.dp))
+                Text(it, color = Amber, fontSize = 11.sp, textAlign = TextAlign.Center, maxLines = 2)
             }
+            Spacer(Modifier.height(8.dp))
+            // Явная кнопка возврата к экрану записи
+            CompactChip(text = "‹ К записи", onClick = onBack)
         }
-        Row(
-            Modifier.fillMaxSize().padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Bottom
-        ) {
-            Button(
-                onClick = onAgain,
-                modifier = Modifier.size(40.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Green)
-            ) {
-                Box(Modifier.size(14.dp).clip(CircleShape).background(Color.White))
-            }
-        }
+    }
+}
+
+@Composable
+private fun CompactChip(text: String, onClick: () -> Unit) {
+    Box(
+        Modifier.clip(RoundedCornerShape(20.dp)).background(Green)
+            .clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 7.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -340,13 +340,7 @@ private fun NoServeScreen(onRetry: () -> Unit) {
         Text("Встань боком в кадр\nи выполни подачу целиком",
             color = Color(0xFFBDBDBD), fontSize = 11.sp, textAlign = TextAlign.Center)
         Spacer(Modifier.height(10.dp))
-        Button(
-            onClick = onRetry,
-            modifier = Modifier.size(56.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Green)
-        ) {
-            Box(Modifier.size(18.dp).clip(CircleShape).background(Color.White))
-        }
+        CompactChip(text = "‹ К записи", onClick = onRetry)
     }
 }
 

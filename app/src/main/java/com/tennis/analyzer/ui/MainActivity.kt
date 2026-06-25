@@ -103,6 +103,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Не гасим экран, пока приложение открыто (съёмка со штатива, управление с часов)
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         isLeftHanded = prefs.getBoolean("isLeftHanded", false)
 
         serveRecorder = ServeRecorder(this)
@@ -646,7 +649,7 @@ class MainActivity : ComponentActivity() {
         realtimeDetector = null
         skeletonOverlay = null
         realtimePhase.value = ServePhase.IDLE
-        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        // экран держим включённым всегда (флаг ставится в onCreate)
     }
 
     private fun onRealtimeServeCompleted(event: ServeEvent) {
