@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Теннисный мяч -->
+    <path
+        android:fillColor="#D4E157"
+        android:pathData="M54,28 m-26,0 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0" />
+    <!-- Лёгкая тень снизу для объёма -->
+    <path
+        android:fillColor="#C0CA33"
+        android:pathData="M54,80 m-26,0 a26,26 0 0,0 52,0 a26,26 0 0,0 -52,0 Z"
+        android:fillAlpha="0.0" />
+    <!-- Швы мяча (белые дуги) -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"
+        android:pathData="M40,30 C30,42 30,66 40,78" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"
+        android:pathData="M68,30 C78,42 78,66 68,78" />
+</vector>

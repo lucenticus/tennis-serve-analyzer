@@ -348,11 +348,15 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                // Команды с часов (Wear OS пульт): START/STOP записи на телефоне
+                // Команды с часов (Wear OS пульт): START/STOP записи, MODE переключение режима
                 LaunchedEffect(Unit) {
-                    com.tennis.analyzer.wear.WearLink.onCommand = { path ->
+                    com.tennis.analyzer.wear.WearLink.onCommand = { path, payload ->
                         scope.launch(Dispatchers.Main) {
                             when (path) {
+                                com.tennis.analyzer.wear.WearLink.PATH_MODE ->
+                                    if (!isRecording && !isAnalyzing) {
+                                        mode = if (payload == "REALTIME") AppMode.REALTIME else AppMode.ANALYSIS
+                                    }
                                 com.tennis.analyzer.wear.WearLink.PATH_START ->
                                     if (!isRecording && !isAnalyzing && mode == AppMode.ANALYSIS) {
                                         isRecording = true
@@ -398,9 +402,14 @@ class MainActivity : ComponentActivity() {
             }
 
             videoAnalyzer.isLeftHanded = isLeftHanded
+            com.tennis.analyzer.wear.WearLink.sendProgress(this@MainActivity, 0)
             val result = withContext(Dispatchers.IO) {
                 videoAnalyzer.analyze(tmpFile) { done, total ->
-                    scope.launch(Dispatchers.Main) { setProgress(done.toFloat() / total.coerceAtLeast(1)) }
+                    val frac = done.toFloat() / total.coerceAtLeast(1)
+                    scope.launch(Dispatchers.Main) {
+                        setProgress(frac)
+                        com.tennis.analyzer.wear.WearLink.sendProgress(this@MainActivity, (frac * 100).toInt())
+                    }
                 }
             }
             setAnalyzing(false)
@@ -425,8 +434,9 @@ class MainActivity : ComponentActivity() {
         }
         while (recentScores.size > 15) recentScores.removeAt(0)
 
-        // Отправляем результат на часы (если подключены)
-        lastScore?.let { com.tennis.analyzer.wear.WearLink.sendResult(this, it, lastTip) }
+        // Всегда шлём итог на часы — иначе экран «Анализ» на часах висит вечно.
+        // Если подача не распозналась (lastScore null) → score=-1.
+        com.tennis.analyzer.wear.WearLink.sendResult(this, lastScore ?: -1, lastTip)
 
         AnalysisActivity.start(
             this@MainActivity,
@@ -552,6 +562,10 @@ class MainActivity : ComponentActivity() {
             if (advice.isNotEmpty()) skeletonOverlay?.showAdvice(advice.take(2).map { it.textRu })
             // Голосовая подсказка после подачи: совет, иначе — оценка
             if (advice.isNotEmpty()) voice.speak(advice) else voice.speakScore(metrics.overallScore)
+            // Дублируем результат на часы
+            com.tennis.analyzer.wear.WearLink.sendResult(
+                this@MainActivity, metrics.overallScore.toInt(), advice.firstOrNull()?.textRu
+            )
         }
     }
 
