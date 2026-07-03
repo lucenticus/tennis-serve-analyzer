@@ -77,10 +77,11 @@ class MainActivity : ComponentActivity() {
     private var skeletonOverlay: SkeletonOverlay? = null
     private var lastRealtimePoseMs = 0L
 
-    // Помощь кадрирования для часов (где встать, влезет ли подброс)
+    // Помощь кадрирования (где встать, влезет ли подброс) — на телефоне и часах
     private var framingActive = false
     private var lastFramingPoseMs = 0L
     private var lastFramingCode = ""
+    private val framingCodeState = mutableStateOf("")   // для UI на телефоне
     private val realtimePhase = mutableStateOf(ServePhase.IDLE)
     private val realtimeServeCount = mutableStateOf(0)
 
@@ -110,6 +111,7 @@ class MainActivity : ComponentActivity() {
 
         serveRecorder = ServeRecorder(this)
         voice = VoiceFeedback(this)
+        voice.enabled = prefs.getBoolean("voice_enabled", true)
         voice.init {}
         videoAnalyzer = VideoPoseAnalyzer(this)
         scope.launch(Dispatchers.IO) {
@@ -183,6 +185,11 @@ class MainActivity : ComponentActivity() {
                         leftHanded = !leftHanded
                         isLeftHanded = leftHanded
                         prefs.edit().putBoolean("isLeftHanded", leftHanded).apply()
+                    }
+                    if (!isRecording && !isAnalyzing) {
+                        IconCircleBtn("⚙️") {
+                            startActivity(android.content.Intent(this@MainActivity, SettingsActivity::class.java))
+                        }
                     }
                 }
 
@@ -407,7 +414,15 @@ class MainActivity : ComponentActivity() {
                 // Помощь кадрирования активна, когда стоишь в «Анализ» и ещё не пишешь
                 LaunchedEffect(mode, isRecording, isAnalyzing) {
                     framingActive = (mode == AppMode.ANALYSIS && !isRecording && !isAnalyzing)
-                    if (!framingActive) lastFramingCode = ""
+                    if (!framingActive) { lastFramingCode = ""; framingCodeState.value = "" }
+                }
+
+                // Подсказка кадрирования на экране камеры
+                if (framingActive) {
+                    FramingHintBar(
+                        code = framingCodeState.value,
+                        modifier = Modifier.align(Alignment.TopCenter).padding(top = 78.dp)
+                    )
                 }
 
                 // Обучалка при первом запуске (поверх всего)
@@ -679,9 +694,10 @@ class MainActivity : ComponentActivity() {
             scope.launch(Dispatchers.Main) { skeletonOverlay?.update(frame, realtimePhase.value) }
             return
         }
-        // Помощь кадрирования — считаем статус и шлём на часы (только при изменении)
+        // Помощь кадрирования — считаем статус, показываем на телефоне и шлём на часы
         if (framingActive) {
             val code = computeFraming(frame)
+            framingCodeState.value = code
             if (code != lastFramingCode) {
                 lastFramingCode = code
                 com.tennis.analyzer.wear.WearLink.sendFraming(this, code)
@@ -823,12 +839,42 @@ class MainActivity : ComponentActivity() {
         return markers
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Перечитываем настройки (могли измениться в SettingsActivity)
+        isLeftHanded = prefs.getBoolean("isLeftHanded", false)
+        if (::voice.isInitialized) voice.enabled = prefs.getBoolean("voice_enabled", true)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         scope.cancel()
         if (::poseDetector.isInitialized) poseDetector.close()
         videoAnalyzer.close()
         voice.shutdown()
+    }
+}
+
+@Composable
+private fun FramingHintBar(code: String, modifier: Modifier = Modifier) {
+    val wl = com.tennis.analyzer.wear.WearLink
+    val (text, color) = when (code) {
+        wl.FRAME_OK          -> "✓ Кадр в порядке" to Color(0xFF66BB6A)
+        wl.FRAME_NO_PERSON   -> "Встань в кадр, боком к сетке" to Color(0xFFBDBDBD)
+        wl.FRAME_MOVE_BACK   -> "↔ Отойди — не помещаешься целиком" to Color(0xFFFFC107)
+        wl.FRAME_MOVE_CLOSER -> "→ Подойди ближе" to Color(0xFFFFC107)
+        wl.FRAME_LOW_TOSS    -> "↑ Мало места сверху — подброс не влезет" to Color(0xFFFFC107)
+        else -> return
+    }
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = Color.Black.copy(alpha = 0.6f),
+        modifier = modifier
+    ) {
+        Text(
+            text, color = color, fontSize = 14.sp, fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
     }
 }
 
@@ -898,6 +944,20 @@ private fun CameraToggleBtn(isFrontCamera: Boolean, onClick: () -> Unit) {
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(if (isFrontCamera) "🔙" else "🤳", fontSize = 22.sp)
+        }
+    }
+}
+
+@Composable
+private fun IconCircleBtn(emoji: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = androidx.compose.foundation.shape.CircleShape,
+        color = Color.Black.copy(alpha = 0.55f),
+        modifier = Modifier.size(52.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(emoji, fontSize = 22.sp)
         }
     }
 }

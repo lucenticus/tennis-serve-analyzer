@@ -14,6 +14,9 @@ class VoiceFeedback(private val context: Context) {
     private var isReady = false
     private var isSpeaking = false
 
+    /** Глобальный выключатель голоса (из настроек). */
+    var enabled = true
+
     private val recentAdvice = mutableMapOf<String, Int>()
     private var serveCount = 0
 
@@ -83,7 +86,7 @@ class VoiceFeedback(private val context: Context) {
     }
 
     fun speak(advice: List<ServeAdvice>) {
-        if (!isReady || isSpeaking) return
+        if (!enabled || !isReady || isSpeaking) return
         serveCount++
 
         val toSpeak = advice.firstOrNull { a ->
@@ -95,13 +98,13 @@ class VoiceFeedback(private val context: Context) {
     }
 
     fun speakScore(score: Float) {
-        if (!isReady || isSpeaking) return
+        if (!enabled || !isReady || isSpeaking) return
         sayText("Оценка подачи: ${score.toInt()} из ста")
     }
 
     /** Произносит текст немедленно, прерывая текущую речь (для системных уведомлений) */
     fun speakImmediate(text: String) {
-        if (!isReady) return
+        if (!enabled || !isReady) return
         val id = UUID.randomUUID().toString()
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, id)
     }

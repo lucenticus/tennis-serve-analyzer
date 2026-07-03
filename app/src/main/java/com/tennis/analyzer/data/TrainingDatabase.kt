@@ -50,6 +50,9 @@ interface HistoryDao {
 
     @Delete
     suspend fun delete(entry: ServeHistoryEntry)
+
+    @Query("DELETE FROM serve_history")
+    suspend fun deleteAll()
 }
 
 @Dao
