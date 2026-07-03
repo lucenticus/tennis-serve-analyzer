@@ -16,6 +16,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TennisAnalyzer">
 
+        <!-- AdMob App ID. ⚠️ ЗАМЕНИ на свой перед публикацией (сейчас тестовый Google). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
         <!-- Qualcomm FastRPC vendor-библиотека для QNN HTP (Hexagon NPU).
              Без объявления Android 12+ не даёт приложению dlopen её из /vendor/lib64,
              из-за чего QnnDevice_create падает с INVALID_CONFIG / "Failed to load skel". -->

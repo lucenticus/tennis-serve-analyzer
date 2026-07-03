@@ -113,6 +113,7 @@ class MainActivity : ComponentActivity() {
         voice = VoiceFeedback(this)
         voice.enabled = prefs.getBoolean("voice_enabled", true)
         voice.init {}
+        com.tennis.analyzer.ads.AdManager.start(this)
         videoAnalyzer = VideoPoseAnalyzer(this)
         scope.launch(Dispatchers.IO) {
             videoAnalyzer.setup()
@@ -518,6 +519,9 @@ class MainActivity : ComponentActivity() {
         // Сохраняем подачу в историю (видео + оценка), если распознана
         lastScore?.let { sc -> saveServeToHistory(videoFile, sc, lastTip, result.videoDurationMs) }
 
+        // Показать межстраничную рекламу при возврате на главный экран
+        showAdOnResume = true
+
         AnalysisActivity.start(
             this@MainActivity,
             AnalysisInputData(
@@ -839,11 +843,18 @@ class MainActivity : ComponentActivity() {
         return markers
     }
 
+    private var showAdOnResume = false
+
     override fun onResume() {
         super.onResume()
         // Перечитываем настройки (могли измениться в SettingsActivity)
         isLeftHanded = prefs.getBoolean("isLeftHanded", false)
         if (::voice.isInitialized) voice.enabled = prefs.getBoolean("voice_enabled", true)
+        // Реклама после просмотра результата анализа (с ограничением частоты внутри)
+        if (showAdOnResume) {
+            showAdOnResume = false
+            com.tennis.analyzer.ads.AdManager.maybeShowInterstitial(this)
+        }
     }
 
     override fun onDestroy() {
