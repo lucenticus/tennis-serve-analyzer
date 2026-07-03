@@ -52,18 +52,21 @@ class HistoryActivity : ComponentActivity() {
                     }
                 },
                 bottomBar = {
-                    if (selected.isNotEmpty()) {
-                        Button(
-                            onClick = { openCompare(entries, selected) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7CB342)),
-                            shape = RoundedCornerShape(24.dp),
-                            modifier = Modifier.fillMaxWidth().padding(16.dp).height(50.dp)
-                        ) {
-                            Text(
-                                if (selected.size == 2) "⚖  Сравнить side-by-side" else "▶  Смотреть",
-                                fontSize = 16.sp, color = Color.White
-                            )
+                    Column {
+                        if (selected.isNotEmpty()) {
+                            Button(
+                                onClick = { openCompare(entries, selected) },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7CB342)),
+                                shape = RoundedCornerShape(24.dp),
+                                modifier = Modifier.fillMaxWidth().padding(16.dp).height(50.dp)
+                            ) {
+                                Text(
+                                    if (selected.size == 2) "⚖  Сравнить side-by-side" else "▶  Смотреть",
+                                    fontSize = 16.sp, color = Color.White
+                                )
+                            }
                         }
+                        com.tennis.analyzer.ads.BannerAd()
                     }
                 }
             ) { pad ->
