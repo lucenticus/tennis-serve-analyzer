@@ -1,8 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+}
+
+// Подпись релиза читается из keystore.properties (в .gitignore). Если файла нет —
+// релиз локально подписывается debug-ключом, чтобы сборка не падала.
+val keystorePropsFile = rootProject.file("keystore.properties")
+val hasReleaseKeystore = keystorePropsFile.exists()
+val keystoreProps = Properties().apply {
+    if (hasReleaseKeystore) keystorePropsFile.inputStream().use { load(it) }
 }
 
 android {
@@ -15,12 +25,29 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        // Только arm64: ONNX/QNN есть лишь под arm64, остальные ABI = мёртвый вес.
+        ndk { abiFilters += "arm64-v8a" }
+    }
+
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = if (hasReleaseKeystore) signingConfigs.getByName("release")
+                            else signingConfigs.getByName("debug")
         }
     }
 
@@ -39,6 +66,14 @@ android {
         jniLibs.pickFirsts += "**/libOpenCL.so"
         // Распаковывать .so на диск — обход проверки выравнивания ELF на Android 15
         jniLibs.useLegacyPackaging = true
+        // Выкидываем старые/ненужные QNN-бэкенды (экономия ~30 МБ). Оставляем HTP
+        // V73/V75/V79/V81 (Snapdragon 8 Gen1/Gen2/Gen3/8 Elite). Старые устройства → CPU.
+        jniLibs.excludes += setOf(
+            "**/libQnnHtpV68Skel.so", "**/libQnnHtpV68Stub.so",
+            "**/libQnnHtpV69Skel.so", "**/libQnnHtpV69Stub.so",
+            "**/libQnnDspV66Skel.so", "**/libQnnDspV66Stub.so",
+            "**/libQnnDsp.so", "**/libQnnGpu.so"
+        )
     }
 }
 

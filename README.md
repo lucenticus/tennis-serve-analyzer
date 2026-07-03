@@ -108,3 +108,14 @@ ml/                Python scripts for dataset prep / LSTM experiments
 Working prototype, actively tuned on real serves. Phase-detection accuracy depends on
 clear racket visibility through the swing; the offline analysis mode is the most
 accurate, while real-time mode trades some precision for live feedback.
+
+## License
+
+This project is licensed under the **GNU Affero General Public License v3.0**
+(AGPL-3.0) — see [LICENSE](LICENSE). This is required because it uses
+**Ultralytics YOLOv8** models, which are AGPL-3.0 licensed. Any distribution
+(including via app stores) must keep the complete corresponding source available
+under the same license. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for
+all component licenses.
+
+Source code: https://github.com/lucenticus/tennis-serve-analyzer
