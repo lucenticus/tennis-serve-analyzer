@@ -127,8 +127,7 @@ class MainActivity : ComponentActivity() {
             var isRecording by remember { mutableStateOf(false) }
             var isAnalyzing by remember { mutableStateOf(false) }
             var analyzeProgress by remember { mutableStateOf(0f) }
-            var isFrontCamera by remember { mutableStateOf(false) }
-            var leftHanded by remember { mutableStateOf(isLeftHanded) }
+            // Рабочая рука и выбор камеры — теперь в SettingsActivity
             var autoRecord by remember { mutableStateOf(false) }
             var mode by remember { mutableStateOf(AppMode.ANALYSIS) }
             var showOnboarding by remember { mutableStateOf(!prefs.getBoolean("onboarding_done", false)) }
@@ -175,21 +174,12 @@ class MainActivity : ComponentActivity() {
                 }
 
                 // Верхняя панель: кнопки камеры и руки
-                Column(
-                    Modifier.align(Alignment.TopEnd).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalAlignment = Alignment.End
-                ) {
-                    CameraToggleBtn(isFrontCamera) {
-                        isFrontCamera = !isFrontCamera
-                        cameraManager.switchCamera()
-                    }
-                    HandednessBtn(leftHanded) {
-                        leftHanded = !leftHanded
-                        isLeftHanded = leftHanded
-                        prefs.edit().putBoolean("isLeftHanded", leftHanded).apply()
-                    }
-                    if (!isRecording && !isAnalyzing) {
+                // Только кнопка настроек в правом верхнем углу
+                if (!isRecording && !isAnalyzing) {
+                    Column(
+                        Modifier.align(Alignment.TopEnd).padding(16.dp),
+                        horizontalAlignment = Alignment.End
+                    ) {
                         IconCircleBtn("⚙️") {
                             startActivity(android.content.Intent(this@MainActivity, SettingsActivity::class.java))
                         }
@@ -852,6 +842,7 @@ class MainActivity : ComponentActivity() {
         // Перечитываем настройки (могли измениться в SettingsActivity)
         isLeftHanded = prefs.getBoolean("isLeftHanded", false)
         if (::voice.isInitialized) voice.enabled = prefs.getBoolean("voice_enabled", true)
+        if (::cameraManager.isInitialized) cameraManager.setCamera(prefs.getBoolean("use_front_camera", false))
         // Реклама после просмотра результата анализа (с ограничением частоты внутри)
         if (showAdOnResume) {
             showAdOnResume = false
@@ -944,20 +935,6 @@ private fun OnboardingOverlay(onDone: () -> Unit) {
 }
 
 @Composable
-private fun CameraToggleBtn(isFrontCamera: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = androidx.compose.foundation.shape.CircleShape,
-        color = Color.Black.copy(alpha = 0.55f),
-        modifier = Modifier.size(52.dp)
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(if (isFrontCamera) "🔙" else "🤳", fontSize = 22.sp)
-        }
-    }
-}
-
-@Composable
 private fun IconCircleBtn(emoji: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
@@ -967,20 +944,6 @@ private fun IconCircleBtn(emoji: String, onClick: () -> Unit) {
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(emoji, fontSize = 22.sp)
-        }
-    }
-}
-
-@Composable
-private fun HandednessBtn(isLeftHanded: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = androidx.compose.foundation.shape.CircleShape,
-        color = Color.Black.copy(alpha = 0.55f),
-        modifier = Modifier.size(52.dp)
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(if (isLeftHanded) "🤚" else "✋", fontSize = 22.sp)
         }
     }
 }

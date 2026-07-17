@@ -45,6 +45,9 @@
     <string name="settings_handedness">Рабочая рука</string>
     <string name="hand_left">Левая</string>
     <string name="hand_right">Правая</string>
+    <string name="settings_camera">Камера</string>
+    <string name="camera_back">Задняя</string>
+    <string name="camera_front">Фронтальная</string>
     <string name="settings_voice">Голосовые подсказки</string>
     <string name="voice_on">Включены</string>
     <string name="voice_off">Выключены</string>

@@ -45,6 +45,9 @@
     <string name="settings_handedness">Dominant hand</string>
     <string name="hand_left">Left</string>
     <string name="hand_right">Right</string>
+    <string name="settings_camera">Camera</string>
+    <string name="camera_back">Back</string>
+    <string name="camera_front">Front</string>
     <string name="settings_voice">Voice tips</string>
     <string name="voice_on">On</string>
     <string name="voice_off">Off</string>

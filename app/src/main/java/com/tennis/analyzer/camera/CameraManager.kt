@@ -37,10 +37,14 @@ class CameraManager(
     }
 
     fun switchCamera() {
-        lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK)
-            CameraSelector.LENS_FACING_FRONT
-        else
-            CameraSelector.LENS_FACING_BACK
+        setCamera(!isFrontCamera)
+    }
+
+    /** Явно выставить камеру (для настроек и восстановления состояния при запуске). */
+    fun setCamera(front: Boolean) {
+        val target = if (front) CameraSelector.LENS_FACING_FRONT else CameraSelector.LENS_FACING_BACK
+        if (target == lensFacing) return
+        lensFacing = target
         bindCamera()
     }
 

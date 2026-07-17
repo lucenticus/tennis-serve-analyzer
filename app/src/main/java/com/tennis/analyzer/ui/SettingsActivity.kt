@@ -39,6 +39,7 @@ class SettingsActivity : ComponentActivity() {
         setContent {
             var leftHanded by remember { mutableStateOf(prefs.getBoolean("isLeftHanded", false)) }
             var voiceOn by remember { mutableStateOf(prefs.getBoolean("voice_enabled", true)) }
+            var useFrontCamera by remember { mutableStateOf(prefs.getBoolean("use_front_camera", false)) }
             var cleared by remember { mutableStateOf(false) }
 
             Column(
@@ -59,6 +60,19 @@ class SettingsActivity : ComponentActivity() {
                         onCheckedChange = {
                             leftHanded = it
                             prefs.edit().putBoolean("isLeftHanded", it).apply()
+                        }
+                    )
+                }
+                // Камера
+                SettingRow(
+                    title = stringResource(R.string.settings_camera),
+                    subtitle = stringResource(if (useFrontCamera) R.string.camera_front else R.string.camera_back)
+                ) {
+                    Switch(
+                        checked = useFrontCamera,
+                        onCheckedChange = {
+                            useFrontCamera = it
+                            prefs.edit().putBoolean("use_front_camera", it).apply()
                         }
                     )
                 }
