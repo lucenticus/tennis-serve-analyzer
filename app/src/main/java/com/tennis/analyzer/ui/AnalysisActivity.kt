@@ -40,13 +40,12 @@ class AnalysisActivity : ComponentActivity() {
     private lateinit var scoreText: TextView
     private lateinit var phaseLabel: TextView
     private lateinit var frameInfoText: TextView
-    // Плавающая карточка совета текущей фазы (заменяет длинный отчёт)
-    private lateinit var coachCard: LinearLayout
-    private lateinit var coachHeader: TextView
-    private lateinit var coachContent: LinearLayout
-    private lateinit var coachToggle: TextView
-    private var coachExpanded: Boolean = true
-    // Разбор по фазам (для лукапа при смене фазы) — обновляется в runOverallAnalysis
+    // Компактная строка совета: показывает ТОЛЬКО замечание текущей фазы, или скрыта
+    private lateinit var adviceLine: TextView
+    // Основная нижняя панель (можно скрыть тапом по видео)
+    private lateinit var chromePanel: LinearLayout
+    private var chromeVisible = true
+    // Разбор по фазам (лукап при смене фазы)
     private var phaseReports: Map<ServePhase, com.tennis.analyzer.analysis.PhaseReport> = emptyMap()
     private var lastCoachPhase: ServePhase? = null
     private lateinit var phaseBar: PhaseTimelineView
@@ -154,41 +153,58 @@ class AnalysisActivity : ComponentActivity() {
         }
     }
 
-    /** Обновляет плавающую карточку советов под текущую фазу видео. */
+    /**
+     * Обновляет строку совета: только замечания текущей фазы (без «хорошо»).
+     * Если замечаний нет — строка скрыта, видео чистое.
+     * Тап по строке показывает диалог со всеми замечаниями по фазам.
+     */
     private fun updateCoachCard(phase: ServePhase) {
         if (phase == lastCoachPhase) return
         lastCoachPhase = phase
-        val report = phaseReports[phase]
-        val hasContent = report != null && (report.goods.isNotEmpty() || report.issues.isNotEmpty())
-
-        coachCard.visibility = if (hasContent) android.view.View.VISIBLE else android.view.View.GONE
-        if (!hasContent) return
-
-        val phaseColor = phaseColor(phase)
-        coachHeader.text = phaseName(phase)
-        coachHeader.setTextColor(phaseColor)
-
-        coachContent.removeAllViews()
-        val dp = resources.displayMetrics.density
-        // При сжатой карточке показываем только 1 главный совет (issue > good)
-        val goods  = report!!.goods
-        val issues = report.issues
-        val itemsToShow = if (coachExpanded) issues + goods
-                          else listOfNotNull(issues.firstOrNull() ?: goods.firstOrNull())
-
-        val isIssue = { text: String -> issues.contains(text) }
-        for (text in itemsToShow) {
-            coachContent.addView(TextView(this).apply {
-                this.text = (if (isIssue(text)) "⚠  " else "✓  ") + text
-                setTextColor(if (isIssue(text)) Color.rgb(255, 200, 60) else Color.rgb(120, 220, 120))
-                textSize = 13f
-                setPadding(0, (2 * dp).toInt(), 0, (2 * dp).toInt())
-            })
+        val issues = phaseReports[phase]?.issues.orEmpty()
+        val top = issues.firstOrNull()
+        if (top == null) {
+            adviceLine.visibility = android.view.View.GONE
+            return
         }
+        val prefix = if (issues.size > 1) "⚠ $top   +${issues.size - 1}" else "⚠ $top"
+        adviceLine.text = prefix
+        adviceLine.visibility = android.view.View.VISIBLE
+    }
 
-        // Индикатор развёрнутости
-        val totalCount = goods.size + issues.size
-        coachToggle.text = if (coachExpanded) "▾" else if (totalCount > 1) "▴ +${totalCount - 1}" else "▴"
+    /** Показывает все замечания по всем фазам в диалоге (по тапу на adviceLine). */
+    private fun showAllIssuesDialog() {
+        val order = listOf(
+            ServePhase.READY_STANCE, ServePhase.TOSS, ServePhase.TROPHY,
+            ServePhase.BACKSCRATCH, ServePhase.ACCELERATION, ServePhase.CONTACT,
+            ServePhase.FOLLOW_THROUGH
+        )
+        val sb = StringBuilder()
+        for (ph in order) {
+            val issues = phaseReports[ph]?.issues.orEmpty()
+            if (issues.isEmpty()) continue
+            sb.append(phaseName(ph)).append("\n")
+            for (i in issues) sb.append("⚠ ").append(i).append("\n")
+            sb.append("\n")
+        }
+        if (sb.isEmpty()) return
+        android.app.AlertDialog.Builder(this)
+            .setMessage(sb.toString().trimEnd())
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    /** Тап по видео — прячет/показывает нижнюю панель управления. */
+    private fun toggleChrome() {
+        chromeVisible = !chromeVisible
+        val target = if (chromeVisible) 1f else 0f
+        chromePanel.animate().alpha(target).setDuration(150).withStartAction {
+            if (chromeVisible) chromePanel.visibility = android.view.View.VISIBLE
+        }.withEndAction {
+            if (!chromeVisible) chromePanel.visibility = android.view.View.GONE
+        }.start()
+        // Строка совета тоже скрывается вместе с панелью
+        adviceLine.animate().alpha(target).setDuration(150).start()
     }
 
     private fun phaseName(phase: ServePhase) = when (phase) {
@@ -392,11 +408,13 @@ class AnalysisActivity : ComponentActivity() {
 
         val dp = resources.displayMetrics.density
 
-        // Нижняя панель — компактная
-        val panel = LinearLayout(this).apply {
+        // Нижняя панель — максимально компактная, полупрозрачная. Тап по видео скрывает.
+        chromePanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.argb(200, 0, 0, 0))
-            setPadding(16, 4, 16, 20)
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(Color.argb(0xB8, 0, 0, 0))
+            }
+            setPadding((14 * dp).toInt(), (6 * dp).toInt(), (14 * dp).toInt(), (14 * dp).toInt())
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -404,7 +422,7 @@ class AnalysisActivity : ComponentActivity() {
             )
         }
 
-        // Строка: оценка + фаза + кнопка сохранения
+        // Верхняя строка: оценка + фаза + сохранение
         val topRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -414,113 +432,67 @@ class AnalysisActivity : ComponentActivity() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
         phaseLabel = TextView(this).apply {
-            setTextColor(Color.CYAN); textSize = 13f; gravity = Gravity.END
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setTextColor(Color.CYAN); textSize = 12f; gravity = Gravity.END
+            setPadding(0, 0, (8 * dp).toInt(), 0)
         }
         saveToGalleryBtn = Button(this).apply {
-            text = "💾"; textSize = 16f
+            text = "💾"; textSize = 15f
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.TRANSPARENT)
-            layoutParams = LinearLayout.LayoutParams(
-                (44 * dp).toInt(), (36 * dp).toInt()
-            )
+            layoutParams = LinearLayout.LayoutParams((40 * dp).toInt(), (32 * dp).toInt())
         }
         topRow.addView(scoreText); topRow.addView(phaseLabel); topRow.addView(saveToGalleryBtn)
 
-        // Высота руки + детекция объектов (обновляется каждый кадр)
+        // Заглушка frameInfoText — оставляем для совместимости, но скрыта (детализация ушла в диалог)
         frameInfoText = TextView(this).apply {
-            setTextColor(Color.rgb(160, 220, 255))
-            textSize = 11f
-            setPadding(0, 0, 0, 2)
+            visibility = android.view.View.GONE
         }
 
-        // Таймлайн фаз
+        // Компактная строка совета: показывает ТОЛЬКО замечание текущей фазы (или скрыта)
+        adviceLine = TextView(this).apply {
+            setTextColor(Color.rgb(255, 200, 60))
+            textSize = 13f
+            maxLines = 2
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            setPadding(0, (4 * dp).toInt(), 0, (4 * dp).toInt())
+            visibility = android.view.View.GONE
+            setOnClickListener { showAllIssuesDialog() }
+        }
+
+        // Таймлайн фаз (уменьшен с 80dp до 56dp)
         phaseBar = PhaseTimelineView(this).apply {
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, (80 * dp).toInt()
-            ).also { it.topMargin = 2; it.bottomMargin = 0 }
-        }
-
-        // Скруббер
-        seekBar = SeekBar(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.MATCH_PARENT, (56 * dp).toInt()
             )
         }
 
-        // Play/pause + скорости
-        val ctrlRow = LinearLayout(this).apply {
+        // Один ряд: play/pause + seekBar + скорость
+        val scrubRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
         playPauseBtn = Button(this).apply {
             text = "⏸"; setTextColor(Color.WHITE)
-            setBackgroundColor(Color.argb(140, 50, 50, 50))
-            layoutParams = LinearLayout.LayoutParams((80 * dp).toInt(), (36 * dp).toInt())
+            setBackgroundColor(Color.TRANSPARENT)
+            layoutParams = LinearLayout.LayoutParams((44 * dp).toInt(), (36 * dp).toInt())
+        }
+        seekBar = SeekBar(this).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
         speedGroup = RadioGroup(this).apply {
             orientation = RadioGroup.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
-        ctrlRow.addView(playPauseBtn); ctrlRow.addView(speedGroup)
+        scrubRow.addView(playPauseBtn); scrubRow.addView(seekBar)
 
-        panel.addView(topRow)
-        panel.addView(frameInfoText)
-        panel.addView(phaseBar)
-        panel.addView(seekBar)
-        panel.addView(ctrlRow)
-        root.addView(panel)
+        chromePanel.addView(topRow)
+        chromePanel.addView(adviceLine)
+        chromePanel.addView(phaseBar)
+        chromePanel.addView(scrubRow)
+        chromePanel.addView(speedGroup)
+        root.addView(chromePanel)
 
-        // ── Плавающая карточка советов текущей фазы ─────────────────────────
-        // Полупрозрачная, не перекрывает видео полностью; тап — сжать/развернуть.
-        coachHeader = TextView(this).apply {
-            textSize = 15f
-            setTypeface(null, Typeface.BOLD)
-            setPadding(0, 0, (24 * dp).toInt(), 0)
-        }
-        coachToggle = TextView(this).apply {
-            text = "▾"; setTextColor(Color.WHITE); textSize = 13f
-            gravity = Gravity.END
-        }
-        val coachHeaderRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            addView(coachHeader, LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-            addView(coachToggle, LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
-        }
-        coachContent = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(0, (4 * dp).toInt(), 0, 0)
-        }
-        coachCard = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding((14 * dp).toInt(), (10 * dp).toInt(), (14 * dp).toInt(), (10 * dp).toInt())
-            background = android.graphics.drawable.GradientDrawable().apply {
-                cornerRadius = 20f * dp
-                setColor(Color.argb(0xE6, 20, 20, 24))
-                setStroke((1 * dp).toInt(), Color.argb(0x55, 255, 255, 255))
-            }
-            addView(coachHeaderRow)
-            addView(coachContent)
-            visibility = android.view.View.GONE
-            setOnClickListener {
-                coachExpanded = !coachExpanded
-                val cur = lastCoachPhase; lastCoachPhase = null
-                cur?.let { updateCoachCard(it) }
-            }
-        }
-        // Позиционируем карточку слева над панелью управления
-        val coachLp = FrameLayout.LayoutParams(
-            (280 * dp).toInt(), FrameLayout.LayoutParams.WRAP_CONTENT,
-            Gravity.START or Gravity.BOTTOM
-        ).also {
-            it.leftMargin = (12 * dp).toInt()
-            it.bottomMargin = (232 * dp).toInt()   // выше панели управления
-        }
-        coachCard.layoutParams = coachLp
-        root.addView(coachCard)
+        // Тап по видео (не по панели) — скрыть/показать панель
+        poseOverlay.setOnClickListener { toggleChrome() }
 
         setContentView(root)
     }
