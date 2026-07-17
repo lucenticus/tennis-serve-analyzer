@@ -7,6 +7,7 @@ import android.view.View
 import com.tennis.analyzer.detection.ServePhase
 import com.tennis.analyzer.pose.LandmarkIndex
 import com.tennis.analyzer.pose.PoseFrame
+import com.tennis.analyzer.R
 
 class SkeletonOverlay @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -68,36 +69,18 @@ class SkeletonOverlay @JvmOverloads constructor(
     private val rectF = RectF()
 
     // Подсказки для каждой фазы: заголовок + описание что делать
-    private val phaseHints = mapOf(
-        ServePhase.IDLE to Pair(
-            "Встаньте в кадр",
-            "Телефон должен видеть вас в полный рост сбоку или немного спереди"
-        ),
-        ServePhase.READY_STANCE to Pair(
-            "Исходная стойка",
-            "Боком к сетке, ноги на ширине плеч, колени слегка согнуты"
-        ),
-        ServePhase.TOSS to Pair(
-            "Подброс мяча",
-            "Левая рука плавно тянет мяч вверх — на высоту вытянутой ракетки"
-        ),
-        ServePhase.TROPHY to Pair(
-            "Позиция трофея",
-            "Обе руки вверх и в стороны, прогнитесь назад, перенесите вес на заднюю ногу"
-        ),
-        ServePhase.ACCELERATION to Pair(
-            "Разгон ракетки",
-            "Резко разогните локоть, тяните запястье к мячу — набирайте максимальную скорость"
-        ),
-        ServePhase.CONTACT to Pair(
-            "Контакт с мячом",
-            "Рука полностью выпрямлена вверх, кисть пронирует — бейте в высшей точке"
-        ),
-        ServePhase.FOLLOW_THROUGH to Pair(
-            "Завершение",
-            "Ракетка продолжает движение вниз и влево, вес переносится на переднюю ногу"
+    private fun s(id: Int) = context.getString(id)
+    private val phaseHints by lazy {
+        mapOf(
+            ServePhase.IDLE           to Pair(s(R.string.hint_idle_t),    s(R.string.hint_idle_b)),
+            ServePhase.READY_STANCE   to Pair(s(R.string.hint_stance_t),  s(R.string.hint_stance_b)),
+            ServePhase.TOSS           to Pair(s(R.string.hint_toss_t),    s(R.string.hint_toss_b)),
+            ServePhase.TROPHY         to Pair(s(R.string.hint_trophy_t),  s(R.string.hint_trophy_b)),
+            ServePhase.ACCELERATION   to Pair(s(R.string.hint_accel_t),   s(R.string.hint_accel_b)),
+            ServePhase.CONTACT        to Pair(s(R.string.hint_contact_t), s(R.string.hint_contact_b)),
+            ServePhase.FOLLOW_THROUGH to Pair(s(R.string.hint_follow_t),  s(R.string.hint_follow_b))
         )
-    )
+    }
 
     private val hintTitlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
@@ -190,7 +173,7 @@ class SkeletonOverlay @JvmOverloads constructor(
 
         // Подпись "балл"
         adviceTitlePaint.color = Color.argb(180, 255, 255, 255)
-        canvas.drawText("балл", x + 4f, 130f, adviceTitlePaint)
+        canvas.drawText(s(R.string.score_unit), x + 4f, 130f, adviceTitlePaint)
     }
 
     private fun drawPhaseHint(canvas: Canvas) {
@@ -271,7 +254,7 @@ class SkeletonOverlay @JvmOverloads constructor(
 
         // Заголовок
         adviceTitlePaint.color = Color.argb((adviceAlpha * 255).toInt(), 255, 220, 60)
-        canvas.drawText("💡 Советы", left + 24f, top + titleH, adviceTitlePaint)
+        canvas.drawText(s(R.string.advice_card_title), left + 24f, top + titleH, adviceTitlePaint)
 
         // Разделитель
         val divPaint = Paint().apply {

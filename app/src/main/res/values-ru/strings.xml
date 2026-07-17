@@ -88,4 +88,24 @@
     <string name="export_saved">Видео с позой сохранено в галерею</string>
     <string name="save_error">Ошибка сохранения</string>
     <string name="error_generic">Ошибка: %1$s</string>
+
+    <!-- Real-time phase coaching hints -->
+    <string name="hint_idle_t">Встаньте в кадр</string>
+    <string name="hint_idle_b">Телефон должен видеть вас в полный рост сбоку или немного спереди</string>
+    <string name="hint_stance_t">Исходная стойка</string>
+    <string name="hint_stance_b">Боком к сетке, ноги на ширине плеч, колени слегка согнуты</string>
+    <string name="hint_toss_t">Подброс мяча</string>
+    <string name="hint_toss_b">Свободная рука плавно тянет мяч вверх — на высоту вытянутой ракетки</string>
+    <string name="hint_trophy_t">Позиция трофея</string>
+    <string name="hint_trophy_b">Обе руки вверх и в стороны, прогнитесь назад, перенесите вес на заднюю ногу</string>
+    <string name="hint_accel_t">Разгон ракетки</string>
+    <string name="hint_accel_b">Резко разогните локоть, тяните запястье к мячу — набирайте максимальную скорость</string>
+    <string name="hint_contact_t">Контакт с мячом</string>
+    <string name="hint_contact_b">Рука полностью выпрямлена вверх, кисть пронирует — бейте в высшей точке</string>
+    <string name="hint_follow_t">Завершение</string>
+    <string name="hint_follow_b">Ракетка продолжает движение вниз и влево, вес переносится на переднюю ногу</string>
+    <string name="score_unit">балл</string>
+    <string name="advice_card_title">💡 Советы</string>
+    <string name="voice_score">Оценка подачи: %1$d из ста</string>
+    <string name="voice_training_mode">Режим тренировки. Выполняй подачу.</string>
 </resources>

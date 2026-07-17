@@ -88,4 +88,24 @@
     <string name="export_saved">Video with pose saved to gallery</string>
     <string name="save_error">Save error</string>
     <string name="error_generic">Error: %1$s</string>
+
+    <!-- Real-time phase coaching hints -->
+    <string name="hint_idle_t">Step into frame</string>
+    <string name="hint_idle_b">The phone should see your full body from the side or slightly in front</string>
+    <string name="hint_stance_t">Ready stance</string>
+    <string name="hint_stance_b">Side-on to the net, feet shoulder-width, knees slightly bent</string>
+    <string name="hint_toss_t">Ball toss</string>
+    <string name="hint_toss_b">Your tossing hand smoothly lifts the ball up — to the height of your extended racket</string>
+    <string name="hint_trophy_t">Trophy position</string>
+    <string name="hint_trophy_b">Both arms up and out, arch back, weight on the back foot</string>
+    <string name="hint_accel_t">Racket acceleration</string>
+    <string name="hint_accel_b">Snap the elbow open, drive the wrist to the ball — build maximum speed</string>
+    <string name="hint_contact_t">Ball contact</string>
+    <string name="hint_contact_b">Arm fully extended up, wrist pronates — hit at the highest point</string>
+    <string name="hint_follow_t">Follow-through</string>
+    <string name="hint_follow_b">The racket continues down and left, weight shifts to the front foot</string>
+    <string name="score_unit">pts</string>
+    <string name="advice_card_title">💡 Tips</string>
+    <string name="voice_score">Serve score: %1$d out of a hundred</string>
+    <string name="voice_training_mode">Training mode. Perform a serve.</string>
 </resources>
