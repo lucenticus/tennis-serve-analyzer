@@ -13,8 +13,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import com.tennis.analyzer.R
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -202,7 +204,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
                     ) {
                         Text(
-                            "● Запись...",
+                            stringResource(R.string.recording),
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                             color = Color.White, fontSize = 18.sp
                         )
@@ -221,7 +223,7 @@ class MainActivity : ComponentActivity() {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                Text("Анализирую подачу...", color = Color.White, fontSize = 18.sp)
+                                Text(stringResource(R.string.analyzing_serve), color = Color.White, fontSize = 18.sp)
                                 LinearProgressIndicator(
                                     progress = { analyzeProgress },
                                     modifier = Modifier.width(220.dp)
@@ -249,7 +251,7 @@ class MainActivity : ComponentActivity() {
                                 color = Color.Black.copy(alpha = 0.55f)
                             ) {
                                 Text(
-                                    text = "Подач: ${recentScores.size}   Средняя: ${recentScores.average().toInt()}   Последняя: ${recentScores.last().toInt()}",
+                                    text = stringResource(R.string.session_stats, recentScores.size, recentScores.average().toInt(), recentScores.last().toInt()),
                                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                                     color = Color.White, fontSize = 14.sp
                                 )
@@ -294,7 +296,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 )
                                 Text(
-                                    text = if (autoRecord) "Авто-запись: вкл" else "Авто-запись: выкл",
+                                    text = "${stringResource(R.string.auto_record_label)}: ${stringResource(if (autoRecord) R.string.state_on else R.string.state_off)}",
                                     color = Color.White, fontSize = 14.sp
                                 )
                             }
@@ -309,7 +311,7 @@ class MainActivity : ComponentActivity() {
                                 shape = RoundedCornerShape(28.dp),
                                 modifier = Modifier.height(64.dp).widthIn(min = 220.dp)
                             ) {
-                                Text("● Записать подачу", fontSize = 20.sp)
+                                Text(stringResource(R.string.record_serve), fontSize = 20.sp)
                             }
 
                             // Загрузить из галереи
@@ -328,7 +330,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.height(48.dp).widthIn(min = 220.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                             ) {
-                                Text("📂  Загрузить из галереи", fontSize = 16.sp)
+                                Text(stringResource(R.string.load_from_gallery), fontSize = 16.sp)
                             }
 
                             // История подач + сравнение
@@ -340,7 +342,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.height(48.dp).widthIn(min = 220.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                             ) {
-                                Text("📊  История и сравнение", fontSize = 16.sp)
+                                Text(stringResource(R.string.history_and_compare), fontSize = 16.sp)
                             }
                         }
 
@@ -351,7 +353,7 @@ class MainActivity : ComponentActivity() {
                                 color = Color(0xAAF44336)
                             ) {
                                 Text(
-                                    "● Авто-запись...",
+                                    stringResource(R.string.auto_recording),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                     color = Color.White, fontSize = 14.sp
                                 )
@@ -870,11 +872,11 @@ class MainActivity : ComponentActivity() {
 private fun FramingHintBar(code: String, modifier: Modifier = Modifier) {
     val wl = com.tennis.analyzer.wear.WearLink
     val (text, color) = when (code) {
-        wl.FRAME_OK          -> "✓ Кадр в порядке" to Color(0xFF66BB6A)
-        wl.FRAME_NO_PERSON   -> "Встань в кадр, боком к сетке" to Color(0xFFBDBDBD)
-        wl.FRAME_MOVE_BACK   -> "↔ Отойди — не помещаешься целиком" to Color(0xFFFFC107)
-        wl.FRAME_MOVE_CLOSER -> "→ Подойди ближе" to Color(0xFFFFC107)
-        wl.FRAME_LOW_TOSS    -> "↑ Мало места сверху — подброс не влезет" to Color(0xFFFFC107)
+        wl.FRAME_OK          -> stringResource(R.string.frame_ok) to Color(0xFF66BB6A)
+        wl.FRAME_NO_PERSON   -> stringResource(R.string.frame_no_person) to Color(0xFFBDBDBD)
+        wl.FRAME_MOVE_BACK   -> stringResource(R.string.frame_move_back) to Color(0xFFFFC107)
+        wl.FRAME_MOVE_CLOSER -> stringResource(R.string.frame_move_closer) to Color(0xFFFFC107)
+        wl.FRAME_LOW_TOSS    -> stringResource(R.string.frame_low_toss) to Color(0xFFFFC107)
         else -> return
     }
     Surface(
@@ -893,14 +895,10 @@ private fun FramingHintBar(code: String, modifier: Modifier = Modifier) {
 private fun OnboardingOverlay(onDone: () -> Unit) {
     data class Slide(val emoji: String, val title: String, val body: String)
     val slides = listOf(
-        Slide("🎾", "Анализатор подачи",
-            "Снимай свою подачу — получай разбор по фазам, момент удара и советы, как улучшить технику."),
-        Slide("🔀", "Два режима",
-            "«Анализ» — запись и детальный разбор. «Реал-тайм» — живые подсказки голосом во время тренировки. Переключай вверху по центру."),
-        Slide("📹", "Как снимать",
-            "Поставь телефон боком к корту, лучше на штатив. Оставь место сверху — чтобы подброс мяча влез в кадр. Жми запись на экране или с часов."),
-        Slide("⌚", "Рука и часы",
-            "Укажи рабочую руку кнопкой ✋ справа вверху. С Galaxy Watch можно запускать запись и видеть оценку с подсказкой прямо на руке.")
+        Slide("🎾", stringResource(R.string.onb1_title), stringResource(R.string.onb1_body)),
+        Slide("🔀", stringResource(R.string.onb2_title), stringResource(R.string.onb2_body)),
+        Slide("📹", stringResource(R.string.onb3_title), stringResource(R.string.onb3_body)),
+        Slide("⌚", stringResource(R.string.onb4_title), stringResource(R.string.onb4_body))
     )
     var step by remember { mutableStateOf(0) }
     val slide = slides[step]
@@ -932,11 +930,11 @@ private fun OnboardingOverlay(onDone: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(0.7f).height(48.dp),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Text(if (step < slides.lastIndex) "Далее" else "Начать",
+                Text(stringResource(if (step < slides.lastIndex) R.string.onb_next else R.string.onb_start),
                     fontSize = 16.sp, color = Color.White)
             }
             if (step < slides.lastIndex) {
-                Text("Пропустить", color = Color(0xFF888888), fontSize = 13.sp,
+                Text(stringResource(R.string.onb_skip), color = Color(0xFF888888), fontSize = 13.sp,
                     modifier = Modifier.clickable { onDone() })
             } else {
                 Spacer(Modifier.height(19.dp))
@@ -993,8 +991,8 @@ private fun HandednessBtn(isLeftHanded: Boolean, onClick: () -> Unit) {
 private fun ModeSelector(mode: AppMode, onSelect: (AppMode) -> Unit, modifier: Modifier = Modifier) {
     Surface(shape = RoundedCornerShape(24.dp), color = Color.Black.copy(alpha = 0.6f), modifier = modifier) {
         Row(Modifier.padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            ModeTab("Анализ", mode == AppMode.ANALYSIS) { onSelect(AppMode.ANALYSIS) }
-            ModeTab("Реал-тайм", mode == AppMode.REALTIME) { onSelect(AppMode.REALTIME) }
+            ModeTab(stringResource(R.string.mode_analysis), mode == AppMode.ANALYSIS) { onSelect(AppMode.ANALYSIS) }
+            ModeTab(stringResource(R.string.mode_realtime), mode == AppMode.REALTIME) { onSelect(AppMode.REALTIME) }
         }
     }
 }
@@ -1023,10 +1021,8 @@ private fun RealtimePanel(phase: ServePhase, serveCount: Int, lastScore: Float?,
         modifier = modifier
     ) {
         Text(
-            buildString {
-                append("Подач: $serveCount")
-                if (lastScore != null) append("   Последняя: ${lastScore.toInt()}")
-            },
+            if (lastScore != null) stringResource(R.string.realtime_stats_last, serveCount, lastScore.toInt())
+            else stringResource(R.string.realtime_stats, serveCount),
             color = Color.White, fontSize = 15.sp,
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
         )

@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name">Анализатор подачи</string>
+
+    <!-- Modes -->
+    <string name="mode_analysis">Анализ</string>
+    <string name="mode_realtime">Реал-тайм</string>
+
+    <!-- Main screen -->
+    <string name="record_serve">● Записать подачу</string>
+    <string name="load_from_gallery">📂  Загрузить из галереи</string>
+    <string name="history_and_compare">📊  История и сравнение</string>
+    <string name="analyzing_serve">Анализирую подачу…</string>
+    <string name="recording">● Запись…</string>
+    <string name="auto_recording">● Авто-запись…</string>
+    <string name="auto_record_label">Авто-запись</string>
+    <string name="state_on">вкл</string>
+    <string name="state_off">выкл</string>
+    <string name="session_stats">Подач: %1$d   Средняя: %2$d   Последняя: %3$d</string>
+    <string name="realtime_stats">Подач: %1$d</string>
+    <string name="realtime_stats_last">Подач: %1$d   Последняя: %2$d</string>
+    <string name="realtime_hint">Выполняй подачу — слушай подсказки</string>
+
+    <!-- Framing hints -->
+    <string name="frame_ok">✓ Кадр в порядке</string>
+    <string name="frame_no_person">Встань в кадр, боком к сетке</string>
+    <string name="frame_move_back">↔ Отойди — не помещаешься целиком</string>
+    <string name="frame_move_closer">→ Подойди ближе</string>
+    <string name="frame_low_toss">↑ Мало места сверху — подброс не влезет</string>
+
+    <!-- Onboarding -->
+    <string name="onb_next">Далее</string>
+    <string name="onb_start">Начать</string>
+    <string name="onb_skip">Пропустить</string>
+    <string name="onb1_title">Анализатор подачи</string>
+    <string name="onb1_body">Снимай свою подачу — получай разбор по фазам, момент удара и советы, как улучшить технику.</string>
+    <string name="onb2_title">Два режима</string>
+    <string name="onb2_body">«Анализ» — запись и детальный разбор. «Реал-тайм» — живые подсказки голосом во время тренировки. Переключай вверху по центру.</string>
+    <string name="onb3_title">Как снимать</string>
+    <string name="onb3_body">Поставь телефон боком к корту, лучше на штатив. Оставь место сверху — чтобы подброс мяча влез в кадр. Жми запись на экране или с часов.</string>
+    <string name="onb4_title">Рука и часы</string>
+    <string name="onb4_body">Укажи рабочую руку кнопкой ✋ справа вверху. С Galaxy Watch можно запускать запись и видеть оценку с подсказкой прямо на руке.</string>
+
+    <!-- Settings -->
+    <string name="settings">Настройки</string>
+    <string name="settings_handedness">Рабочая рука</string>
+    <string name="hand_left">Левая</string>
+    <string name="hand_right">Правая</string>
+    <string name="settings_voice">Голосовые подсказки</string>
+    <string name="voice_on">Включены</string>
+    <string name="voice_off">Выключены</string>
+    <string name="settings_clear_history">Очистить историю подач</string>
+    <string name="settings_history_cleared">История очищена</string>
+    <string name="settings_source">Исходный код (AGPL-3.0)</string>
+    <string name="settings_source_sub">Открыть на GitHub</string>
+    <string name="settings_about">Tennis Serve Analyzer\nЛицензия: AGPL-3.0</string>
+
+    <!-- History &amp; comparison -->
+    <string name="history_title">История подач</string>
+    <string name="history_hint_select">Отметь две подачи для сравнения</string>
+    <string name="history_selected">Выбрано: %1$d/2</string>
+    <string name="history_empty">Пока нет записей.\nЗапиши и проанализируй подачу.</string>
+    <string name="history_compare">⚖  Сравнить side-by-side</string>
+    <string name="history_watch">▶  Смотреть</string>
+    <string name="compare_serve_n">Подача %1$d</string>
+    <string name="compare_play">▶  Вместе</string>
+    <string name="compare_pause">⏸  Пауза</string>
+</resources>

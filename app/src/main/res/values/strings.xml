@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name">Tennis Serve Analyzer</string>
+
+    <!-- Modes -->
+    <string name="mode_analysis">Analysis</string>
+    <string name="mode_realtime">Real-time</string>
+
+    <!-- Main screen -->
+    <string name="record_serve">● Record serve</string>
+    <string name="load_from_gallery">📂  Load from gallery</string>
+    <string name="history_and_compare">📊  History &amp; comparison</string>
+    <string name="analyzing_serve">Analyzing serve…</string>
+    <string name="recording">● Recording…</string>
+    <string name="auto_recording">● Auto-recording…</string>
+    <string name="auto_record_label">Auto-record</string>
+    <string name="state_on">on</string>
+    <string name="state_off">off</string>
+    <string name="session_stats">Serves: %1$d   Avg: %2$d   Last: %3$d</string>
+    <string name="realtime_stats">Serves: %1$d</string>
+    <string name="realtime_stats_last">Serves: %1$d   Last: %2$d</string>
+    <string name="realtime_hint">Perform a serve — listen to the tips</string>
+
+    <!-- Framing hints -->
+    <string name="frame_ok">✓ Framing looks good</string>
+    <string name="frame_no_person">Step into frame, side-on to the net</string>
+    <string name="frame_move_back">↔ Step back — you don\'t fully fit</string>
+    <string name="frame_move_closer">→ Step closer</string>
+    <string name="frame_low_toss">↑ Not enough room above — the toss won\'t fit</string>
+
+    <!-- Onboarding -->
+    <string name="onb_next">Next</string>
+    <string name="onb_start">Start</string>
+    <string name="onb_skip">Skip</string>
+    <string name="onb1_title">Serve analyzer</string>
+    <string name="onb1_body">Record your serve — get a phase-by-phase breakdown, the contact moment, and tips to improve your technique.</string>
+    <string name="onb2_title">Two modes</string>
+    <string name="onb2_body">"Analysis" — record and get a detailed breakdown. "Real-time" — live spoken tips during practice. Switch at the top center.</string>
+    <string name="onb3_title">How to film</string>
+    <string name="onb3_body">Place the phone side-on to the court, ideally on a tripod. Leave room above so the ball toss fits in frame. Tap record on screen or from the watch.</string>
+    <string name="onb4_title">Handedness &amp; watch</string>
+    <string name="onb4_body">Set your dominant hand with the ✋ button at top right. With a Galaxy Watch you can start recording and see your score and tip right on your wrist.</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="settings_handedness">Dominant hand</string>
+    <string name="hand_left">Left</string>
+    <string name="hand_right">Right</string>
+    <string name="settings_voice">Voice tips</string>
+    <string name="voice_on">On</string>
+    <string name="voice_off">Off</string>
+    <string name="settings_clear_history">Clear serve history</string>
+    <string name="settings_history_cleared">History cleared</string>
+    <string name="settings_source">Source code (AGPL-3.0)</string>
+    <string name="settings_source_sub">Open on GitHub</string>
+    <string name="settings_about">Tennis Serve Analyzer\nLicense: AGPL-3.0</string>
+
+    <!-- History &amp; comparison -->
+    <string name="history_title">Serve history</string>
+    <string name="history_hint_select">Select two serves to compare</string>
+    <string name="history_selected">Selected: %1$d/2</string>
+    <string name="history_empty">No records yet.\nRecord and analyze a serve.</string>
+    <string name="history_compare">⚖  Compare side-by-side</string>
+    <string name="history_watch">▶  Watch</string>
+    <string name="compare_serve_n">Serve %1$d</string>
+    <string name="compare_play">▶  Together</string>
+    <string name="compare_pause">⏸  Pause</string>
+</resources>

@@ -18,9 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tennis.analyzer.R
 import com.tennis.analyzer.data.ServeHistoryEntry
 import com.tennis.analyzer.data.TrainingDatabase
 import kotlinx.coroutines.Dispatchers
@@ -43,10 +45,10 @@ class HistoryActivity : ComponentActivity() {
                 containerColor = Color(0xFF101010),
                 topBar = {
                     Column(Modifier.background(Color(0xFF101010)).fillMaxWidth().padding(16.dp, 36.dp, 16.dp, 8.dp)) {
-                        Text("История подач", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.history_title), color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                         Text(
-                            if (selected.isEmpty()) "Отметь две подачи для сравнения"
-                            else "Выбрано: ${selected.size}/2",
+                            if (selected.isEmpty()) stringResource(R.string.history_hint_select)
+                            else stringResource(R.string.history_selected, selected.size),
                             color = Color(0xFF9E9E9E), fontSize = 13.sp
                         )
                     }
@@ -61,7 +63,7 @@ class HistoryActivity : ComponentActivity() {
                                 modifier = Modifier.fillMaxWidth().padding(16.dp).height(50.dp)
                             ) {
                                 Text(
-                                    if (selected.size == 2) "⚖  Сравнить side-by-side" else "▶  Смотреть",
+                                    stringResource(if (selected.size == 2) R.string.history_compare else R.string.history_watch),
                                     fontSize = 16.sp, color = Color.White
                                 )
                             }
@@ -72,7 +74,7 @@ class HistoryActivity : ComponentActivity() {
             ) { pad ->
                 if (entries.isEmpty()) {
                     Box(Modifier.fillMaxSize().padding(pad), contentAlignment = Alignment.Center) {
-                        Text("Пока нет записей.\nЗапиши и проанализируй подачу.",
+                        Text(stringResource(R.string.history_empty),
                             color = Color(0xFF777777), fontSize = 15.sp)
                     }
                 } else {
@@ -122,7 +124,7 @@ private fun HistoryRow(
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val df = remember { SimpleDateFormat("d MMM, HH:mm", Locale("ru")) }
+    val df = remember { SimpleDateFormat("d MMM, HH:mm", Locale.getDefault()) }
     val sc = entry.score
     val scColor = when {
         sc >= 75 -> Color(0xFF66BB6A); sc >= 50 -> Color(0xFFFFC107); else -> Color(0xFFE53935)

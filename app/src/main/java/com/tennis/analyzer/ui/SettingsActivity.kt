@@ -17,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.tennis.analyzer.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tennis.analyzer.data.TrainingDatabase
@@ -44,11 +46,14 @@ class SettingsActivity : ComponentActivity() {
                     .padding(horizontal = 16.dp)
             ) {
                 Spacer(Modifier.height(36.dp))
-                Text("Настройки", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.settings), color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(16.dp))
 
                 // Рабочая рука
-                SettingRow(title = "Рабочая рука", subtitle = if (leftHanded) "Левая" else "Правая") {
+                SettingRow(
+                    title = stringResource(R.string.settings_handedness),
+                    subtitle = stringResource(if (leftHanded) R.string.hand_left else R.string.hand_right)
+                ) {
                     Switch(
                         checked = leftHanded,
                         onCheckedChange = {
@@ -58,7 +63,10 @@ class SettingsActivity : ComponentActivity() {
                     )
                 }
                 // Голос
-                SettingRow(title = "Голосовые подсказки", subtitle = if (voiceOn) "Включены" else "Выключены") {
+                SettingRow(
+                    title = stringResource(R.string.settings_voice),
+                    subtitle = stringResource(if (voiceOn) R.string.voice_on else R.string.voice_off)
+                ) {
                     Switch(
                         checked = voiceOn,
                         onCheckedChange = {
@@ -72,20 +80,23 @@ class SettingsActivity : ComponentActivity() {
 
                 // Очистить историю
                 ActionRow(
-                    title = if (cleared) "История очищена" else "Очистить историю подач",
+                    title = stringResource(if (cleared) R.string.settings_history_cleared else R.string.settings_clear_history),
                     danger = true
                 ) { clearHistory { cleared = true } }
 
                 Spacer(Modifier.height(8.dp))
 
                 // Исходный код (AGPL)
-                ActionRow(title = "Исходный код (AGPL-3.0)", subtitle = "Открыть на GitHub") {
+                ActionRow(
+                    title = stringResource(R.string.settings_source),
+                    subtitle = stringResource(R.string.settings_source_sub)
+                ) {
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(SOURCE_URL)))
                 }
 
                 Spacer(Modifier.height(20.dp))
                 Text(
-                    "Tennis Serve Analyzer\nЛицензия: AGPL-3.0",
+                    stringResource(R.string.settings_about),
                     color = Color(0xFF777777), fontSize = 12.sp
                 )
                 Spacer(Modifier.height(24.dp))

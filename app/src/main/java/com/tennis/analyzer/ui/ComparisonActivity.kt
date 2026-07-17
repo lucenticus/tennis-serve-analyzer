@@ -12,9 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.tennis.analyzer.R
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -80,7 +82,7 @@ class ComparisonActivity : ComponentActivity() {
                             color = Color(0xAA000000), shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
                         ) {
-                            Text("Подача ${i + 1}", color = Color.White, fontSize = 12.sp,
+                            Text(stringResource(R.string.compare_serve_n, i + 1), color = Color.White, fontSize = 12.sp,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
                         }
                     }
@@ -110,7 +112,7 @@ class ComparisonActivity : ComponentActivity() {
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7CB342)),
                             shape = RoundedCornerShape(24.dp)
-                        ) { Text(if (isPlaying) "⏸  Пауза" else "▶  Вместе", color = Color.White) }
+                        ) { Text(stringResource(if (isPlaying) R.string.compare_pause else R.string.compare_play), color = Color.White) }
 
                         // Скорость
                         val speeds = listOf(0.25f, 0.5f, 1f)
