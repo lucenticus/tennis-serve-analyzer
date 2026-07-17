@@ -40,8 +40,15 @@ class AnalysisActivity : ComponentActivity() {
     private lateinit var scoreText: TextView
     private lateinit var phaseLabel: TextView
     private lateinit var frameInfoText: TextView
-    private lateinit var reportScroll: ScrollView
-    private lateinit var reportContainer: LinearLayout
+    // Плавающая карточка совета текущей фазы (заменяет длинный отчёт)
+    private lateinit var coachCard: LinearLayout
+    private lateinit var coachHeader: TextView
+    private lateinit var coachContent: LinearLayout
+    private lateinit var coachToggle: TextView
+    private var coachExpanded: Boolean = true
+    // Разбор по фазам (для лукапа при смене фазы) — обновляется в runOverallAnalysis
+    private var phaseReports: Map<ServePhase, com.tennis.analyzer.analysis.PhaseReport> = emptyMap()
+    private var lastCoachPhase: ServePhase? = null
     private lateinit var phaseBar: PhaseTimelineView
     private lateinit var seekBar: SeekBar
     private lateinit var playPauseBtn: Button
@@ -100,29 +107,39 @@ class AnalysisActivity : ComponentActivity() {
         val contacts = AnalysisInput.value?.serveContacts ?: emptyList()
         val windows = serveWindows(frames, contacts)
 
+        // Собираем разбор по фазам, чтоб потом отдавать пользователю по одной фазе за раз
+        val bucket = mutableMapOf<ServePhase, MutableList<com.tennis.analyzer.analysis.PhaseReport>>()
+
         if (windows.size <= 1) {
             val (metrics, _) = ServeAnalyzer.analyze(applicationContext, frames, isLeftHanded)
             val report = PhaseAnalyzer.analyze(applicationContext, frames, phases, isLeftHanded)
             scoreText.text = getString(R.string.analysis_score, metrics.overallScore.toInt())
-            reportContainer.removeAllViews()
-            appendPhaseReport(report.phases)
-            return
+            for (pr in report.phases) bucket.getOrPut(pr.phase) { mutableListOf() }.add(pr)
+        } else {
+            val scores = mutableListOf<Int>()
+            for ((_, window) in windows.withIndex()) {
+                val sub = frames.filter { it.timestampMs in window.first..window.second }
+                if (sub.size < 3) continue
+                val subPhases = phases.filter { it.timeMs in window.first..window.second }
+                val (m, _) = ServeAnalyzer.analyze(applicationContext, sub, isLeftHanded)
+                scores.add(m.overallScore.toInt())
+                val rep = PhaseAnalyzer.analyze(applicationContext, sub, subPhases, isLeftHanded)
+                for (pr in rep.phases) bucket.getOrPut(pr.phase) { mutableListOf() }.add(pr)
+            }
+            val avg = if (scores.isEmpty()) 0 else scores.average().toInt()
+            scoreText.text = getString(R.string.analysis_multi_summary, scores.size, avg)
         }
 
-        // Несколько подач — отчёт по каждой отдельно
-        reportContainer.removeAllViews()
-        val scores = mutableListOf<Int>()
-        for ((i, window) in windows.withIndex()) {
-            val sub = frames.filter { it.timestampMs in window.first..window.second }
-            if (sub.size < 3) continue
-            val subPhases = phases.filter { it.timeMs in window.first..window.second }
-            val (m, _) = ServeAnalyzer.analyze(applicationContext, sub, isLeftHanded)
-            scores.add(m.overallScore.toInt())
-            addServeHeader(getString(R.string.analysis_serve_header, i + 1, m.overallScore.toInt()))
-            appendPhaseReport(PhaseAnalyzer.analyze(applicationContext, sub, subPhases, isLeftHanded).phases)
+        // Мержим по фазе (уникальные советы)
+        phaseReports = bucket.mapValues { (phase, reps) ->
+            com.tennis.analyzer.analysis.PhaseReport(
+                phase = phase,
+                goods  = reps.flatMap { it.goods  }.distinct(),
+                issues = reps.flatMap { it.issues }.distinct()
+            )
         }
-        val avg = if (scores.isEmpty()) 0 else scores.average().toInt()
-        scoreText.text = getString(R.string.analysis_multi_summary, scores.size, avg)
+        lastCoachPhase = null
+        updateCoachCard(phaseAt(0L))
     }
 
     /** Окна подач: [серединаДоПредыдущей .. серединаДоСледующей]. */
@@ -137,53 +154,41 @@ class AnalysisActivity : ComponentActivity() {
         }
     }
 
-    private fun addServeHeader(text: String) {
+    /** Обновляет плавающую карточку советов под текущую фазу видео. */
+    private fun updateCoachCard(phase: ServePhase) {
+        if (phase == lastCoachPhase) return
+        lastCoachPhase = phase
+        val report = phaseReports[phase]
+        val hasContent = report != null && (report.goods.isNotEmpty() || report.issues.isNotEmpty())
+
+        coachCard.visibility = if (hasContent) android.view.View.VISIBLE else android.view.View.GONE
+        if (!hasContent) return
+
+        val phaseColor = phaseColor(phase)
+        coachHeader.text = phaseName(phase)
+        coachHeader.setTextColor(phaseColor)
+
+        coachContent.removeAllViews()
         val dp = resources.displayMetrics.density
-        reportContainer.addView(TextView(this).apply {
-            this.text = text
-            setTextColor(Color.WHITE)
-            textSize = 15f
-            setTypeface(null, Typeface.BOLD)
-            setPadding(0, (10 * dp).toInt(), 0, (2 * dp).toInt())
-        })
-    }
+        // При сжатой карточке показываем только 1 главный совет (issue > good)
+        val goods  = report!!.goods
+        val issues = report.issues
+        val itemsToShow = if (coachExpanded) issues + goods
+                          else listOfNotNull(issues.firstOrNull() ?: goods.firstOrNull())
 
-    private fun appendPhaseReport(phases: List<com.tennis.analyzer.analysis.PhaseReport>) {
-        val dp = resources.displayMetrics.density
-
-        for (pr in phases) {
-            if (pr.goods.isEmpty() && pr.issues.isEmpty()) continue
-
-            // Заголовок фазы
-            val header = TextView(this).apply {
-                text = phaseName(pr.phase)
-                setTextColor(phaseColor(pr.phase))
+        val isIssue = { text: String -> issues.contains(text) }
+        for (text in itemsToShow) {
+            coachContent.addView(TextView(this).apply {
+                this.text = (if (isIssue(text)) "⚠  " else "✓  ") + text
+                setTextColor(if (isIssue(text)) Color.rgb(255, 200, 60) else Color.rgb(120, 220, 120))
                 textSize = 13f
-                setTypeface(null, Typeface.BOLD)
-                setPadding(0, (6 * dp).toInt(), 0, 2)
-            }
-            reportContainer.addView(header)
-
-            // Плюсы
-            for (good in pr.goods) {
-                reportContainer.addView(TextView(this).apply {
-                    text = "✓ $good"
-                    setTextColor(Color.rgb(100, 220, 100))
-                    textSize = 12f
-                    setPadding((4 * dp).toInt(), 1, 0, 1)
-                })
-            }
-
-            // Замечания
-            for (issue in pr.issues) {
-                reportContainer.addView(TextView(this).apply {
-                    text = "⚠ $issue"
-                    setTextColor(Color.rgb(255, 200, 60))
-                    textSize = 12f
-                    setPadding((4 * dp).toInt(), 1, 0, 1)
-                })
-            }
+                setPadding(0, (2 * dp).toInt(), 0, (2 * dp).toInt())
+            })
         }
+
+        // Индикатор развёрнутости
+        val totalCount = goods.size + issues.size
+        coachToggle.text = if (coachExpanded) "▾" else if (totalCount > 1) "▴ +${totalCount - 1}" else "▴"
     }
 
     private fun phaseName(phase: ServePhase) = when (phase) {
@@ -216,6 +221,7 @@ class AnalysisActivity : ComponentActivity() {
         val fb = FrameAdvisor.analyze(applicationContext, frame, phase, isLeftHanded)
 
         phaseLabel.text = phaseLabel(phase)
+        updateCoachCard(phase)
 
         val hl = com.tennis.analyzer.pose.HandedLandmarks(isLeftHanded)
         val parts = mutableListOf<String>()
@@ -458,28 +464,64 @@ class AnalysisActivity : ComponentActivity() {
         }
         ctrlRow.addView(playPauseBtn); ctrlRow.addView(speedGroup)
 
-        // Прокручиваемый отчёт по фазам
-        reportContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-        }
-        reportScroll = ScrollView(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, (120 * dp).toInt()
-            )
-            addView(reportContainer)
-        }
-
         panel.addView(topRow)
         panel.addView(frameInfoText)
         panel.addView(phaseBar)
         panel.addView(seekBar)
         panel.addView(ctrlRow)
-        panel.addView(reportScroll)
         root.addView(panel)
+
+        // ── Плавающая карточка советов текущей фазы ─────────────────────────
+        // Полупрозрачная, не перекрывает видео полностью; тап — сжать/развернуть.
+        coachHeader = TextView(this).apply {
+            textSize = 15f
+            setTypeface(null, Typeface.BOLD)
+            setPadding(0, 0, (24 * dp).toInt(), 0)
+        }
+        coachToggle = TextView(this).apply {
+            text = "▾"; setTextColor(Color.WHITE); textSize = 13f
+            gravity = Gravity.END
+        }
+        val coachHeaderRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(coachHeader, LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(coachToggle, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        }
+        coachContent = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, (4 * dp).toInt(), 0, 0)
+        }
+        coachCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding((14 * dp).toInt(), (10 * dp).toInt(), (14 * dp).toInt(), (10 * dp).toInt())
+            background = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = 20f * dp
+                setColor(Color.argb(0xE6, 20, 20, 24))
+                setStroke((1 * dp).toInt(), Color.argb(0x55, 255, 255, 255))
+            }
+            addView(coachHeaderRow)
+            addView(coachContent)
+            visibility = android.view.View.GONE
+            setOnClickListener {
+                coachExpanded = !coachExpanded
+                val cur = lastCoachPhase; lastCoachPhase = null
+                cur?.let { updateCoachCard(it) }
+            }
+        }
+        // Позиционируем карточку слева над панелью управления
+        val coachLp = FrameLayout.LayoutParams(
+            (280 * dp).toInt(), FrameLayout.LayoutParams.WRAP_CONTENT,
+            Gravity.START or Gravity.BOTTOM
+        ).also {
+            it.leftMargin = (12 * dp).toInt()
+            it.bottomMargin = (232 * dp).toInt()   // выше панели управления
+        }
+        coachCard.layoutParams = coachLp
+        root.addView(coachCard)
+
         setContentView(root)
     }
 
