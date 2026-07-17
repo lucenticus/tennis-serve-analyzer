@@ -180,12 +180,9 @@ class PlaybackOverlay @JvmOverloads constructor(
             canvas.drawCircle(lmX(idx), lmY(idx), radius, paint)
         }
 
-        // Подписи ключевых суставов руки
-        drawJointLabel(canvas, "Плечо",    lmX(LandmarkIndex.RIGHT_SHOULDER), lmY(LandmarkIndex.RIGHT_SHOULDER))
-        drawJointLabel(canvas, "Локоть",   lmX(LandmarkIndex.RIGHT_ELBOW),    lmY(LandmarkIndex.RIGHT_ELBOW))
-        drawJointLabel(canvas, "Запястье", lmX(LandmarkIndex.RIGHT_WRIST),    lmY(LandmarkIndex.RIGHT_WRIST))
+        // Подписи суставов убраны — только скелет и bbox
 
-        // YOLO bbox: мяч (жёлтый) и ракетка (голубой)
+        // YOLO bbox: мяч (жёлтый) и ракетка (голубой), без текстовых подписей
         val posMs = currentSnapshot?.timestampMs ?: 0L
         for (obj in currentObjects) {
             drawBbox(canvas, obj, scaleX, scaleY, offsetX, offsetY, alpha = 255)
@@ -214,21 +211,13 @@ class PlaybackOverlay @JvmOverloads constructor(
         val hh = obj.h * scaleY / 2f
         val isBall = obj.classId == DetectedObject.CLASS_BALL
         val bboxP = if (isBall) ballBboxPaint else racketBboxPaint
-        val label = if (isBall) "мяч" else "ракетка"
         // Интерполированный бокс — пунктиром и чуть прозрачнее
         bboxP.pathEffect = if (obj.interpolated) dashEffect else null
         val drawAlpha = if (obj.interpolated) (alpha * 0.75f).toInt() else alpha
         bboxP.alpha = drawAlpha
-        bboxLabelBgPaint.alpha = (drawAlpha * 0.7f).toInt()
-        bboxLabelPaint.alpha = drawAlpha
         canvas.drawRect(cx - hw, cy - hh, cx + hw, cy + hh, bboxP)
-        val lw = bboxLabelPaint.measureText(label)
-        canvas.drawRect(cx - hw, cy - hh - bboxLabelPaint.textSize - 4f,
-            cx - hw + lw + 10f, cy - hh, bboxLabelBgPaint)
-        canvas.drawText(label, cx - hw + 5f, cy - hh - 4f, bboxLabelPaint)
         // Сбрасываем состояние чтобы не влиять на другие объекты
         bboxP.alpha = 255; bboxP.pathEffect = null
-        bboxLabelBgPaint.alpha = 180; bboxLabelPaint.alpha = 255
     }
 
     private fun drawJointLabel(canvas: Canvas, text: String, x: Float, y: Float) {

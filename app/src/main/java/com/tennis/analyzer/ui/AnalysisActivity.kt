@@ -52,7 +52,7 @@ class AnalysisActivity : ComponentActivity() {
     private lateinit var seekBar: SeekBar
     private lateinit var playPauseBtn: Button
     private lateinit var saveToGalleryBtn: Button
-    private lateinit var speedGroup: RadioGroup
+    private lateinit var speedSelector: SpeedSelector
 
     private val handler = Handler(Looper.getMainLooper())
     private var userScrubbing = false
@@ -373,14 +373,9 @@ class AnalysisActivity : ComponentActivity() {
 
     private fun setupSpeedControls() {
         val speeds = listOf(0.15f to "0.15×", 0.3f to "0.3×", 0.5f to "0.5×", 1.0f to "1×")
-        speeds.forEachIndexed { idx, (_, label) ->
-            speedGroup.addView(RadioButton(this).apply {
-                text = label; setTextColor(Color.WHITE); id = idx + 1
-                if (label == "0.3×") isChecked = true
-            })
-        }
-        speedGroup.setOnCheckedChangeListener { _, id ->
-            player.playbackParameters = player.playbackParameters.withSpeed(speeds[id - 1].first)
+        speedSelector.setSpeeds(speeds, initial = 0.3f)
+        speedSelector.onSelect = { sp ->
+            player.playbackParameters = player.playbackParameters.withSpeed(sp)
         }
     }
 
@@ -479,16 +474,22 @@ class AnalysisActivity : ComponentActivity() {
         seekBar = SeekBar(this).apply {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
-        speedGroup = RadioGroup(this).apply {
-            orientation = RadioGroup.HORIZONTAL
-        }
+        speedSelector = SpeedSelector(this)
         scrubRow.addView(playPauseBtn); scrubRow.addView(seekBar)
+
+        // Speed selector — центрируется под скруббером
+        val speedRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(0, (6 * dp).toInt(), 0, 0)
+        }
+        speedRow.addView(speedSelector)
 
         chromePanel.addView(topRow)
         chromePanel.addView(adviceLine)
         chromePanel.addView(phaseBar)
         chromePanel.addView(scrubRow)
-        chromePanel.addView(speedGroup)
+        chromePanel.addView(speedRow)
         root.addView(chromePanel)
 
         // Тап по видео (не по панели) — скрыть/показать панель

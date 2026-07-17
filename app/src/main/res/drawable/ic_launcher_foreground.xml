@@ -3,26 +3,80 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Теннисный мяч -->
+    <!-- Adaptive icon — safe zone ~72dp centered. Trophy-pose silhouette + ball. -->
+
+    <!-- Ball (яркий теннисный) — apex подброса высоко над головой -->
     <path
-        android:fillColor="#D4E157"
-        android:pathData="M54,28 m-26,0 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0" />
-    <!-- Лёгкая тень снизу для объёма -->
-    <path
-        android:fillColor="#C0CA33"
-        android:pathData="M54,80 m-26,0 a26,26 0 0,0 52,0 a26,26 0 0,0 -52,0 Z"
-        android:fillAlpha="0.0" />
-    <!-- Швы мяча (белые дуги) -->
+        android:fillColor="#E4F04A"
+        android:pathData="M42,26 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+    <!-- Шов мяча -->
     <path
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="3.2"
+        android:strokeWidth="0.9"
         android:fillColor="#00000000"
         android:strokeLineCap="round"
-        android:pathData="M40,30 C30,42 30,66 40,78" />
+        android:pathData="M39,24 Q42,26 45,24" />
+
+    <!-- Ракетка над головой: обруч + струны + шея -->
+    <!-- Обруч ракетки -->
     <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="3.2"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:pathData="M68,30 C78,42 78,66 68,78" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M78,28 m-9,-13 a9,13 0 1,0 18,0 a9,13 0 1,0 -18,0
+                          M78,28 m-6,-13 a6,10 0 1,1 12,0 a6,10 0 1,1 -12,0 z" />
+    <!-- Струны (несколько линий, чтоб выглядела как ракетка) -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="0.7" android:fillColor="#00000000"
+        android:pathData="M72,10 L84,10 M72,15 L84,15 M72,20 L84,20" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="0.7" android:fillColor="#00000000"
+        android:pathData="M75,4 L75,26 M78,3 L78,27 M81,4 L81,26" />
+    <!-- Шея ракетки в руку -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M76,28 L80,28 L79,32 L77,32 Z" />
+
+    <!-- Голова игрока -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,46 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+
+    <!-- Торс + прогиб назад (характерная поза трофея) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,52
+                          C 44,58 40,68 40,80
+                          L 46,82
+                          C 47,71 51,63 56,58
+                          L 62,54
+                          C 65,52 66,50 63,48
+                          L 58,48 Z" />
+
+    <!-- Рука с ракеткой (правая, вверх и слегка назад к ракетке) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M58,50
+                          L 66,42
+                          L 74,32
+                          L 78,32
+                          L 76,36
+                          L 68,46
+                          L 62,54 Z" />
+
+    <!-- Рука подброса (левая, вытянута вверх, ладонь под мячом) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M52,52
+                          L 46,42
+                          L 42,32
+                          L 45,30
+                          L 48,40
+                          L 55,50 Z" />
+    <!-- Ладонь -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,32 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0" />
+
+    <!-- Нижняя часть тела: ноги (широкая стойка) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M41,80 L44,80 L42,94 L38,94 Z
+                          M48,80 L51,80 L54,94 L50,94 Z" />
 </vector>

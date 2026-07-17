@@ -216,16 +216,12 @@ object VideoExporter {
                 if (isHighlight) highlightPaint else jointPaint)
         }
 
-        // YOLO bbox: мяч и ракетка
+        // YOLO bbox: мяч и ракетка (без текстовых подписей)
         for (obj in frame.objects) {
             val cx = obj.cx * w; val cy = obj.cy * h
             val hw = obj.w * w / 2f; val hh = obj.h * h / 2f
             val paint = if (obj.classId == DetectedObject.CLASS_BALL) ballPaint else racketPaint
-            val label = if (obj.classId == DetectedObject.CLASS_BALL) "мяч" else "ракетка"
             canvas.drawRect(cx - hw, cy - hh, cx + hw, cy + hh, paint)
-            val lw = labelPaint.measureText(label)
-            canvas.drawRect(cx - hw, cy - hh - 36f, cx - hw + lw + 12f, cy - hh, labelBgPaint)
-            canvas.drawText(label, cx - hw + 6f, cy - hh - 6f, labelPaint)
         }
     }
 

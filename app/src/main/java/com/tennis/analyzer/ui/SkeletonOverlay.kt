@@ -170,10 +170,7 @@ class SkeletonOverlay @JvmOverloads constructor(
         scorePaint.color = scoreColor(score)
         val x = width - scorePaint.measureText(text) - 28f
         canvas.drawText(text, x, 100f, scorePaint)
-
-        // Подпись "балл"
-        adviceTitlePaint.color = Color.argb(180, 255, 255, 255)
-        canvas.drawText(s(R.string.score_unit), x + 4f, 130f, adviceTitlePaint)
+        // Подпись "балл" убрана — цифра говорит сама за себя
     }
 
     private fun drawPhaseHint(canvas: Canvas) {
