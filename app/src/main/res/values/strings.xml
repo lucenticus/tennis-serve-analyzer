@@ -118,4 +118,63 @@
     <string name="adv_turn_shoulders">Turn your shoulders more — your %1$s shoulder should point at the net</string>
     <string name="adv_use_legs">Use your legs — bend your knees and push off the ground</string>
     <string name="adv_reach_higher">Reach higher at contact — extend the racket as high as possible</string>
+
+    <!-- Per-phase report advice -->
+    <string name="rs_knees_good">Knees well bent — ready to push off</string>
+    <string name="rs_knees_bad">Bend your knees deeper — it gives an explosive start</string>
+    <string name="rs_side_good">Torso turned side-on — correct stance</string>
+    <string name="rs_side_bad">Stand more side-on to the net — for a stronger turn</string>
+    <string name="toss_high_good">Tossing hand raised high — good toss</string>
+    <string name="toss_ok">Toss height is sufficient</string>
+    <string name="toss_low">Raise the tossing hand higher — the toss is too low</string>
+    <string name="toss_arm_straight">Tossing arm is straight — the ball flies true</string>
+    <string name="toss_arm_bent">Straighten the tossing arm (now %1$d°) — otherwise the ball drifts</string>
+    <string name="trophy_elbow_up">Racket-arm elbow above the shoulder — classic trophy position</string>
+    <string name="trophy_elbow_low">Raise the racket-arm elbow above the shoulder</string>
+    <string name="trophy_angle_good">Trophy elbow angle is ideal (%1$d°)</string>
+    <string name="trophy_angle_bent">Elbow too bent in trophy (%1$d°) — should be ~90°</string>
+    <string name="trophy_angle_straight">Don\'t over-extend the elbow in trophy (%1$d°) — should be ~90°</string>
+    <string name="trophy_both_up">Both arms up — symmetric Y-pose</string>
+    <string name="trophy_toss_higher">Raise the tossing arm higher for a proper Y-position</string>
+    <string name="trophy_rot_good">Good shoulder turn — energy stored for the hit</string>
+    <string name="trophy_rot_bad">Turn the shoulders more in trophy for more power</string>
+    <string name="bs_deep">Deep backscratch — racket well dropped behind the back</string>
+    <string name="bs_ok">Backscratch present — racket below the shoulder</string>
+    <string name="bs_low">Drop the racket lower behind the shoulder — backscratch adds power and spin</string>
+    <string name="bs_elbow_good">Good elbow bend (%1$d°) — loop loaded</string>
+    <string name="bs_elbow_straight">Elbow too straight (%1$d°) in backscratch — should be 90-120°</string>
+    <string name="accel_tilt_good">Good trunk arch (%1$d°) — adds power</string>
+    <string name="accel_tilt_low">Arch back during acceleration — it greatly increases speed</string>
+    <string name="accel_tilt_high">Too much arch (%1$d°) — loss of control</string>
+    <string name="accel_reach_good">Arm reaches up to the ball nicely</string>
+    <string name="accel_reach_bad">Reach higher — the wrist should be well above the shoulder</string>
+    <string name="contact_ext_great">Excellent arm extension at contact (%1$d°)</string>
+    <string name="contact_ext_ok">Arm sufficiently extended (%1$d°)</string>
+    <string name="contact_ext_more">Extend the arm more (%1$d°) — you need 160-175° for max speed</string>
+    <string name="contact_ext_bent">Arm heavily bent at contact (%1$d°) — full extension needed</string>
+    <string name="contact_h_veryhigh">Contact very high (%1$d%% of height) — maximum downward angle</string>
+    <string name="contact_h_good">Good contact height (%1$d%% of height)</string>
+    <string name="contact_h_low">Reach higher at contact (%1$d%% of height) — contact too low</string>
+    <string name="contact_tilt_kept">Trunk arch maintained through contact — good</string>
+    <string name="ft_crossed">Racket crossed the body — full follow-through</string>
+    <string name="ft_short">Bring the racket to the opposite hip — follow-through too short</string>
+    <string name="ft_down">Arm dropped down after the hit — natural finish</string>
+
+    <!-- Misc -->
+    <string name="stop_and_analyze">⏹  Stop &amp; analyze</string>
+    <string name="playback_replay">⟳  Replay</string>
+
+    <!-- Live frame advice (FrameAdvisor) -->
+    <string name="fa_elbow_more">Extend the elbow more — now %1$d°, need 160-175°</string>
+    <string name="fa_elbow_bend">Bend the elbow slightly at contact</string>
+    <string name="fa_elbow_great">✓ Great elbow angle at contact</string>
+    <string name="fa_trophy_bend">Bend the elbow in trophy — the arm should look like an L</string>
+    <string name="fa_trophy_good">✓ Good elbow position in trophy</string>
+    <string name="fa_reach_higher">Raise the racket higher — the wrist should be above the shoulder</string>
+    <string name="fa_contact_good">✓ Good contact height</string>
+    <string name="fa_arch">Arch back — it adds power to the serve</string>
+    <string name="fa_arch_good">✓ Good trunk arch</string>
+    <string name="fa_arch_much">Too much arch — you may lose control</string>
+    <string name="fa_knees">Bend your knees — it gives an explosive push-off</string>
+    <string name="fa_knees_good">✓ Good knee bend</string>
 </resources>

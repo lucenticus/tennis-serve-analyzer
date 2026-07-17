@@ -275,7 +275,7 @@ class MainActivity : ComponentActivity() {
                                 shape = RoundedCornerShape(28.dp),
                                 modifier = Modifier.height(64.dp).widthIn(min = 220.dp)
                             ) {
-                                Text("⏹  Стоп и анализ", fontSize = 20.sp)
+                                Text(stringResource(R.string.stop_and_analyze), fontSize = 20.sp)
                             }
                         } else {
                             // Авто-запись toggle
@@ -662,7 +662,7 @@ class MainActivity : ComponentActivity() {
         realtimeActive = true
         // Не гасим/не блокируем экран во время тренировки
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        voice.speakImmediate("Режим тренировки. Выполняй подачу.")
+        voice.speakImmediate(getString(R.string.voice_training_mode))
     }
 
     private fun stopRealtime() {

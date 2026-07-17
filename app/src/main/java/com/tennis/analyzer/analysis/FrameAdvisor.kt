@@ -1,5 +1,7 @@
 package com.tennis.analyzer.analysis
 
+import android.content.Context
+import com.tennis.analyzer.R
 import com.tennis.analyzer.detection.ServePhase
 import com.tennis.analyzer.pose.HandedLandmarks
 import com.tennis.analyzer.pose.PoseFrame
@@ -15,7 +17,7 @@ data class FrameFeedback(
 
 object FrameAdvisor {
 
-    fun analyze(frame: PoseFrame, phase: ServePhase, isLeftHanded: Boolean = false): FrameFeedback {
+    fun analyze(context: Context, frame: PoseFrame, phase: ServePhase, isLeftHanded: Boolean = false): FrameFeedback {
         val hl = HandedLandmarks(isLeftHanded)
         val lm = frame.landmarks
         val metrics = mutableMapOf<String, String>()
@@ -39,13 +41,13 @@ object FrameAdvisor {
             metrics["Угол локтя"] = "${angle.toInt()}°"
             when (phase) {
                 ServePhase.ACCELERATION -> when {
-                    angle < 140f -> advice += "Разогните локоть сильнее — сейчас ${angle.toInt()}°, нужно 160-175°"
-                    angle > 180f -> advice += "Слегка согните локоть при ударе"
-                    angle in 160f..175f -> advice += "✓ Отличный угол локтя при ударе"
+                    angle < 140f -> advice += context.getString(R.string.fa_elbow_more, angle.toInt())
+                    angle > 180f -> advice += context.getString(R.string.fa_elbow_bend)
+                    angle in 160f..175f -> advice += context.getString(R.string.fa_elbow_great)
                 }
                 ServePhase.TROPHY -> when {
-                    angle > 100f -> advice += "Согните локоть в позиции трофея — рука должна быть как буква L"
-                    else -> advice += "✓ Хорошее положение локтя в трофее"
+                    angle > 100f -> advice += context.getString(R.string.fa_trophy_bend)
+                    else -> advice += context.getString(R.string.fa_trophy_good)
                 }
                 else -> {}
             }
@@ -58,9 +60,9 @@ object FrameAdvisor {
             metrics["Высота руки"] = if (heightDiff > 0) "+${heightPct}% выше плеча" else "${heightPct}% ниже плеча"
             when (phase) {
                 ServePhase.TROPHY, ServePhase.ACCELERATION ->
-                    if (heightDiff < 0.05f) advice += "Поднимите ракетку выше — запястье должно быть над плечом"
+                    if (heightDiff < 0.05f) advice += context.getString(R.string.fa_reach_higher)
                     else if (heightDiff > 0.15f && phase == ServePhase.ACCELERATION)
-                        advice += "✓ Хорошая высота контакта"
+                        advice += context.getString(R.string.fa_contact_good)
                 else -> {}
             }
         }
@@ -73,9 +75,9 @@ object FrameAdvisor {
             metrics["Наклон тела"] = "${abs(tilt.toInt())}°"
             when (phase) {
                 ServePhase.TROPHY, ServePhase.ACCELERATION -> when {
-                    tilt < 5f -> advice += "Прогнитесь назад — это добавит мощь подаче"
-                    tilt in 10f..20f -> advice += "✓ Хороший прогиб туловища"
-                    tilt > 30f -> advice += "Слишком сильный прогиб — можно потерять контроль"
+                    tilt < 5f -> advice += context.getString(R.string.fa_arch)
+                    tilt in 10f..20f -> advice += context.getString(R.string.fa_arch_good)
+                    tilt > 30f -> advice += context.getString(R.string.fa_arch_much)
                 }
                 else -> {}
             }
@@ -87,8 +89,8 @@ object FrameAdvisor {
             metrics["Положение колена"] = if (kneeFlexion > 0.1f) "Согнуто" else "Прямое"
             when (phase) {
                 ServePhase.READY_STANCE, ServePhase.TOSS ->
-                    if (kneeFlexion < 0.05f) advice += "Согните колени — это даст взрывное отталкивание"
-                    else advice += "✓ Хорошее сгибание ног"
+                    if (kneeFlexion < 0.05f) advice += context.getString(R.string.fa_knees)
+                    else advice += context.getString(R.string.fa_knees_good)
                 else -> {}
             }
         }

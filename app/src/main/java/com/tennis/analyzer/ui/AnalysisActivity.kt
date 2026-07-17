@@ -102,7 +102,7 @@ class AnalysisActivity : ComponentActivity() {
 
         if (windows.size <= 1) {
             val (metrics, _) = ServeAnalyzer.analyze(applicationContext, frames, isLeftHanded)
-            val report = PhaseAnalyzer.analyze(frames, phases, isLeftHanded)
+            val report = PhaseAnalyzer.analyze(applicationContext, frames, phases, isLeftHanded)
             scoreText.text = getString(R.string.analysis_score, metrics.overallScore.toInt())
             reportContainer.removeAllViews()
             appendPhaseReport(report.phases)
@@ -119,7 +119,7 @@ class AnalysisActivity : ComponentActivity() {
             val (m, _) = ServeAnalyzer.analyze(applicationContext, sub, isLeftHanded)
             scores.add(m.overallScore.toInt())
             addServeHeader(getString(R.string.analysis_serve_header, i + 1, m.overallScore.toInt()))
-            appendPhaseReport(PhaseAnalyzer.analyze(sub, subPhases, isLeftHanded).phases)
+            appendPhaseReport(PhaseAnalyzer.analyze(applicationContext, sub, subPhases, isLeftHanded).phases)
         }
         val avg = if (scores.isEmpty()) 0 else scores.average().toInt()
         scoreText.text = getString(R.string.analysis_multi_summary, scores.size, avg)
@@ -213,7 +213,7 @@ class AnalysisActivity : ComponentActivity() {
     private fun updateFrameFeedback(posMs: Long) {
         val frame = allFrames.minByOrNull { Math.abs(it.timestampMs - posMs) } ?: return
         val phase = phaseAt(posMs)
-        val fb = FrameAdvisor.analyze(frame, phase, isLeftHanded)
+        val fb = FrameAdvisor.analyze(applicationContext, frame, phase, isLeftHanded)
 
         phaseLabel.text = phaseLabel(phase)
 

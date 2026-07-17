@@ -133,7 +133,7 @@ class PhaseTimelineView(context: Context) : View(context) {
         if (serveContacts.size > 1) {
             for ((i, c) in serveContacts.withIndex()) {
                 val x = msToX(c, w)
-                val label = "Подача ${i + 1}"
+                val label = context.getString(com.tennis.analyzer.R.string.compare_serve_n, i + 1)
                 val lw = serveLabelPaint.measureText(label)
                 shadowPaint.style = Paint.Style.FILL
                 canvas.drawRoundRect(

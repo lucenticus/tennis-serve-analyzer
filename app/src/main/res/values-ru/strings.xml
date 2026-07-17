@@ -118,4 +118,63 @@
     <string name="adv_turn_shoulders">Разверните плечи сильнее — %1$s плечо должно быть направлено к сетке</string>
     <string name="adv_use_legs">Подключайте ноги к удару — согните колени и оттолкнитесь от земли</string>
     <string name="adv_reach_higher">Тянитесь выше в точке контакта — поднимите ракетку максимально вверх</string>
+
+    <!-- Per-phase report advice -->
+    <string name="rs_knees_good">Колени хорошо согнуты — готово к отталкиванию</string>
+    <string name="rs_knees_bad">Согните колени глубже — это даст взрывной старт подаче</string>
+    <string name="rs_side_good">Корпус развёрнут боком — правильная стойка</string>
+    <string name="rs_side_bad">Встаньте больше боком к сетке — так будет мощнее разворот</string>
+    <string name="toss_high_good">Рука с мячом поднята высоко — хороший подброс</string>
+    <string name="toss_ok">Подброс достаточной высоты</string>
+    <string name="toss_low">Поднимайте руку с мячом выше — подброс слишком низкий</string>
+    <string name="toss_arm_straight">Рука при подбросе прямая — мяч полетит ровно</string>
+    <string name="toss_arm_bent">Выпрямите руку при подбросе (сейчас %1$d°) — иначе мяч уйдёт в сторону</string>
+    <string name="trophy_elbow_up">Локоть рабочей руки выше плеча — классическая позиция трофея</string>
+    <string name="trophy_elbow_low">Поднимите локоть рабочей руки выше плеча</string>
+    <string name="trophy_angle_good">Угол локтя в трофее идеальный (%1$d°)</string>
+    <string name="trophy_angle_bent">Локоть слишком согнут в трофее (%1$d°) — должно быть ~90°</string>
+    <string name="trophy_angle_straight">Не разгибайте локоть в трофее слишком сильно (%1$d°) — должно быть ~90°</string>
+    <string name="trophy_both_up">Обе руки подняты — симметричная Y-поза</string>
+    <string name="trophy_toss_higher">Поднимите руку подброса выше для правильной Y-позиции</string>
+    <string name="trophy_rot_good">Хороший поворот плеч — накоплена энергия для удара</string>
+    <string name="trophy_rot_bad">Разверните плечи сильнее в трофее для большей мощи</string>
+    <string name="bs_deep">Глубокий бэкскрэтч — ракетка хорошо опущена за спину</string>
+    <string name="bs_ok">Бэкскрэтч есть — ракетка ниже плеча</string>
+    <string name="bs_low">Опустите ракетку ниже за плечо — бэкскрэтч добавляет мощь и вращение</string>
+    <string name="bs_elbow_good">Хороший сгиб локтя (%1$d°) — накоплена петля</string>
+    <string name="bs_elbow_straight">Слишком прямой локоть (%1$d°) в бэкскрэтче — должно быть 90-120°</string>
+    <string name="accel_tilt_good">Хороший прогиб туловища (%1$d°) — добавляет мощь</string>
+    <string name="accel_tilt_low">Прогнитесь назад при разгоне — это значительно увеличит скорость</string>
+    <string name="accel_tilt_high">Слишком сильный прогиб (%1$d°) — потеря контроля</string>
+    <string name="accel_reach_good">Рука хорошо тянется вверх к мячу</string>
+    <string name="accel_reach_bad">Тянитесь выше — запястье должно быть значительно выше плеча</string>
+    <string name="contact_ext_great">Отличное выпрямление руки при ударе (%1$d°)</string>
+    <string name="contact_ext_ok">Рука достаточно выпрямлена (%1$d°)</string>
+    <string name="contact_ext_more">Разогните руку сильнее (%1$d°) — нужно 160-175° для максимальной скорости</string>
+    <string name="contact_ext_bent">Рука сильно согнута при ударе (%1$d°) — нужно максимальное выпрямление</string>
+    <string name="contact_h_veryhigh">Контакт очень высоко (%1$d%% роста) — максимальный угол вниз</string>
+    <string name="contact_h_good">Хорошая высота контакта (%1$d%% роста)</string>
+    <string name="contact_h_low">Тянитесь выше в момент удара (%1$d%% роста) — контакт слишком низкий</string>
+    <string name="contact_tilt_kept">Прогиб туловища сохраняется до момента удара — хорошо</string>
+    <string name="ft_crossed">Ракетка пересекла тело — полноценное завершение</string>
+    <string name="ft_short">Доведите ракетку до противоположного бедра — завершение слишком короткое</string>
+    <string name="ft_down">Рука опустилась вниз после удара — естественное завершение</string>
+
+    <!-- Misc -->
+    <string name="stop_and_analyze">⏹  Стоп и анализ</string>
+    <string name="playback_replay">⟳  Повтор</string>
+
+    <!-- Live frame advice (FrameAdvisor) -->
+    <string name="fa_elbow_more">Разогните локоть сильнее — сейчас %1$d°, нужно 160-175°</string>
+    <string name="fa_elbow_bend">Слегка согните локоть при ударе</string>
+    <string name="fa_elbow_great">✓ Отличный угол локтя при ударе</string>
+    <string name="fa_trophy_bend">Согните локоть в позиции трофея — рука должна быть как буква L</string>
+    <string name="fa_trophy_good">✓ Хорошее положение локтя в трофее</string>
+    <string name="fa_reach_higher">Поднимите ракетку выше — запястье должно быть над плечом</string>
+    <string name="fa_contact_good">✓ Хорошая высота контакта</string>
+    <string name="fa_arch">Прогнитесь назад — это добавит мощь подаче</string>
+    <string name="fa_arch_good">✓ Хороший прогиб туловища</string>
+    <string name="fa_arch_much">Слишком сильный прогиб — можно потерять контроль</string>
+    <string name="fa_knees">Согните колени — это даст взрывное отталкивание</string>
+    <string name="fa_knees_good">✓ Хорошее сгибание ног</string>
 </resources>

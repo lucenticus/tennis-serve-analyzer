@@ -53,11 +53,12 @@ class VoiceFeedback(private val context: Context) {
 
         val listener = TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                val langResult = tts?.setLanguage(Locale("ru", "RU"))
+                // Язык озвучки = язык интерфейса (советы уже локализованы: ru или en по умолчанию)
+                val ttsLocale = if (Locale.getDefault().language == "ru") Locale("ru", "RU") else Locale.ENGLISH
+                val langResult = tts?.setLanguage(ttsLocale)
                 if (langResult == TextToSpeech.LANG_MISSING_DATA ||
                     langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    // Русский недоступен в этом движке — пробуем следующий
-                    Log.w(TAG, "${engine ?: "default"}: Russian not supported")
+                    Log.w(TAG, "${engine ?: "default"}: $ttsLocale not supported")
                     onFail()
                     return@OnInitListener
                 }
@@ -99,7 +100,7 @@ class VoiceFeedback(private val context: Context) {
 
     fun speakScore(score: Float) {
         if (!enabled || !isReady || isSpeaking) return
-        sayText("Оценка подачи: ${score.toInt()} из ста")
+        sayText(context.getString(com.tennis.analyzer.R.string.voice_score, score.toInt()))
     }
 
     /** Произносит текст немедленно, прерывая текущую речь (для системных уведомлений) */

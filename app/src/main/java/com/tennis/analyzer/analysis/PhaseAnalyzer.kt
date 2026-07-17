@@ -1,5 +1,7 @@
 package com.tennis.analyzer.analysis
 
+import android.content.Context
+import com.tennis.analyzer.R
 import com.tennis.analyzer.data.PhaseMarker
 import com.tennis.analyzer.detection.ServePhase
 import com.tennis.analyzer.pose.HandedLandmarks
@@ -23,12 +25,14 @@ data class ServeReport(
 object PhaseAnalyzer {
 
     fun analyze(
+        context: Context,
         frames: List<PoseFrame>,
         phaseMarkers: List<PhaseMarker>,
         isLeftHanded: Boolean
     ): ServeReport {
         if (frames.isEmpty() || phaseMarkers.isEmpty()) return ServeReport(emptyList(), 0f)
         val hl = HandedLandmarks(isLeftHanded)
+        val c = context
 
         val reports = mutableListOf<PhaseReport>()
 
@@ -43,13 +47,13 @@ object PhaseAnalyzer {
             if (phaseFrames.isEmpty()) continue
 
             val report = when (phase) {
-                ServePhase.READY_STANCE   -> analyzeReadyStance(phaseFrames, hl)
-                ServePhase.TOSS           -> analyzeToss(phaseFrames, hl)
-                ServePhase.TROPHY         -> analyzeTrophy(phaseFrames, hl)
-                ServePhase.BACKSCRATCH    -> analyzeBackscratch(phaseFrames, hl)
-                ServePhase.ACCELERATION   -> analyzeAcceleration(phaseFrames, hl)
-                ServePhase.CONTACT        -> analyzeContact(phaseFrames, hl)
-                ServePhase.FOLLOW_THROUGH -> analyzeFollowThrough(phaseFrames, hl)
+                ServePhase.READY_STANCE   -> analyzeReadyStance(c, phaseFrames, hl)
+                ServePhase.TOSS           -> analyzeToss(c, phaseFrames, hl)
+                ServePhase.TROPHY         -> analyzeTrophy(c, phaseFrames, hl)
+                ServePhase.BACKSCRATCH    -> analyzeBackscratch(c, phaseFrames, hl)
+                ServePhase.ACCELERATION   -> analyzeAcceleration(c, phaseFrames, hl)
+                ServePhase.CONTACT        -> analyzeContact(c, phaseFrames, hl)
+                ServePhase.FOLLOW_THROUGH -> analyzeFollowThrough(c, phaseFrames, hl)
                 else -> null
             }
             if (report != null) reports.add(report)
@@ -65,7 +69,7 @@ object PhaseAnalyzer {
 
     // ── Стойка ────────────────────────────────────────────────────────────────
 
-    private fun analyzeReadyStance(frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
+    private fun analyzeReadyStance(context: Context, frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
         val frame = bestFrame(frames, hl)
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
@@ -79,8 +83,8 @@ object PhaseAnalyzer {
         // Сгиб колен
         if (knee != null && hip != null) {
             val flex = knee.y - hip.y
-            if (flex > 0.08f) goods += "Колени хорошо согнуты — готово к отталкиванию"
-            else issues += "Согните колени глубже — это даст взрывной старт подаче"
+            if (flex > 0.08f) goods += context.getString(R.string.rs_knees_good)
+            else issues += context.getString(R.string.rs_knees_bad)
         }
 
         // Плечи боком к сетке (разница Z между плечами)
@@ -88,8 +92,8 @@ object PhaseAnalyzer {
         val rSh = lm.getOrNull(LandmarkIndex.RIGHT_SHOULDER)
         if (lSh != null && rSh != null) {
             val sideTurn = abs(lSh.z - rSh.z)
-            if (sideTurn > 0.08f) goods += "Корпус развёрнут боком — правильная стойка"
-            else issues += "Встаньте больше боком к сетке — так будет мощнее разворот"
+            if (sideTurn > 0.08f) goods += context.getString(R.string.rs_side_good)
+            else issues += context.getString(R.string.rs_side_bad)
         }
 
         return PhaseReport(ServePhase.READY_STANCE, goods, issues)
@@ -97,7 +101,7 @@ object PhaseAnalyzer {
 
     // ── Подброс ───────────────────────────────────────────────────────────────
 
-    private fun analyzeToss(frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
+    private fun analyzeToss(context: Context, frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
         // Лучший кадр — когда рука с мячом на максимальной высоте
         val frame = frames.minByOrNull { f ->
             f.landmarks.getOrNull(hl.tossWrist)?.y ?: 1f
@@ -114,9 +118,9 @@ object PhaseAnalyzer {
         if (tossWrist != null && tossShoulder != null) {
             val aboveShoulder = tossShoulder.y - tossWrist.y
             when {
-                aboveShoulder > 0.20f -> goods += "Рука с мячом поднята высоко — хороший подброс"
-                aboveShoulder > 0.05f -> goods += "Подброс достаточной высоты"
-                else -> issues += "Поднимайте руку с мячом выше — подброс слишком низкий"
+                aboveShoulder > 0.20f -> goods += context.getString(R.string.toss_high_good)
+                aboveShoulder > 0.05f -> goods += context.getString(R.string.toss_ok)
+                else -> issues += context.getString(R.string.toss_low)
             }
         }
 
@@ -124,9 +128,9 @@ object PhaseAnalyzer {
         if (tossShoulder != null && tossElbow != null && tossWrist != null) {
             val angle = angleBetween(tossShoulder, tossElbow, tossWrist)
             when {
-                angle > 155f -> goods += "Рука при подбросе прямая — мяч полетит ровно"
+                angle > 155f -> goods += context.getString(R.string.toss_arm_straight)
                 angle > 130f -> {} // приемлемо, не комментируем
-                else -> issues += "Выпрямите руку при подбросе (сейчас ${angle.toInt()}°) — иначе мяч уйдёт в сторону"
+                else -> issues += context.getString(R.string.toss_arm_bent, angle.toInt())
             }
         }
 
@@ -135,7 +139,7 @@ object PhaseAnalyzer {
 
     // ── Трофей ────────────────────────────────────────────────────────────────
 
-    private fun analyzeTrophy(frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
+    private fun analyzeTrophy(context: Context, frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
         // Лучший кадр — когда оба локтя максимально высоко
         val frame = frames.minByOrNull { f ->
             val lm = f.landmarks
@@ -156,27 +160,27 @@ object PhaseAnalyzer {
         // Локоть руки с ракеткой выше плеча
         if (racketElbow != null && racketShoulder != null) {
             if (racketElbow.y < racketShoulder.y - 0.03f)
-                goods += "Локоть рабочей руки выше плеча — классическая позиция трофея"
+                goods += context.getString(R.string.trophy_elbow_up)
             else
-                issues += "Поднимите локоть рабочей руки выше плеча"
+                issues += context.getString(R.string.trophy_elbow_low)
         }
 
         // Угол локтя рабочей руки в трофее (~90°)
         if (racketShoulder != null && racketElbow != null && racketWrist != null) {
             val angle = angleBetween(racketShoulder, racketElbow, racketWrist)
             when {
-                angle in 75f..110f -> goods += "Угол локтя в трофее идеальный (${angle.toInt()}°)"
-                angle < 75f -> issues += "Локоть слишком согнут в трофее (${angle.toInt()}°) — должно быть ~90°"
-                else -> issues += "Разогните локоть меньше в трофее (${angle.toInt()}°) — должно быть ~90°"
+                angle in 75f..110f -> goods += context.getString(R.string.trophy_angle_good, angle.toInt())
+                angle < 75f -> issues += context.getString(R.string.trophy_angle_bent, angle.toInt())
+                else -> issues += context.getString(R.string.trophy_angle_straight, angle.toInt())
             }
         }
 
         // Рука подброса тоже вверх
         if (tossElbow != null && tossShoulder != null) {
             if (tossElbow.y < tossShoulder.y)
-                goods += "Обе руки подняты — симметричная Y-поза"
+                goods += context.getString(R.string.trophy_both_up)
             else
-                issues += "Поднимите руку подброса выше для правильной Y-позиции"
+                issues += context.getString(R.string.trophy_toss_higher)
         }
 
         // Поворот плеч
@@ -184,8 +188,8 @@ object PhaseAnalyzer {
         val rSh = lm.getOrNull(LandmarkIndex.RIGHT_SHOULDER)
         if (lSh != null && rSh != null) {
             val rotation = abs(lSh.z - rSh.z)
-            if (rotation > 0.1f) goods += "Хороший поворот плеч — накоплена энергия для удара"
-            else issues += "Разверните плечи сильнее в трофее для большей мощи"
+            if (rotation > 0.1f) goods += context.getString(R.string.trophy_rot_good)
+            else issues += context.getString(R.string.trophy_rot_bad)
         }
 
         return PhaseReport(ServePhase.TROPHY, goods, issues)
@@ -193,7 +197,7 @@ object PhaseAnalyzer {
 
     // ── Бэкскрэтч ─────────────────────────────────────────────────────────────
 
-    private fun analyzeBackscratch(frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
+    private fun analyzeBackscratch(context: Context, frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
         // Лучший кадр — запястье ракетки максимально опущено
         val frame = frames.maxByOrNull { f ->
             f.landmarks.getOrNull(hl.racketWrist)?.y ?: 0f
@@ -210,9 +214,9 @@ object PhaseAnalyzer {
         if (wrist != null && shoulder != null) {
             val drop = wrist.y - shoulder.y
             when {
-                drop > 0.15f -> goods += "Глубокий бэкскрэтч — ракетка хорошо опущена за спину"
-                drop > 0.05f -> goods += "Бэкскрэтч есть — ракетка ниже плеча"
-                else -> issues += "Опустите ракетку ниже за плечо — бэкскрэтч добавляет мощь и вращение"
+                drop > 0.15f -> goods += context.getString(R.string.bs_deep)
+                drop > 0.05f -> goods += context.getString(R.string.bs_ok)
+                else -> issues += context.getString(R.string.bs_low)
             }
         }
 
@@ -220,8 +224,8 @@ object PhaseAnalyzer {
         if (shoulder != null && elbow != null && wrist != null) {
             val angle = angleBetween(shoulder, elbow, wrist)
             when {
-                angle in 80f..130f -> goods += "Хороший сгиб локтя (${angle.toInt()}°) — накоплена петля"
-                angle > 150f -> issues += "Слишком прямой локоть (${angle.toInt()}°) в бэкскрэтче — должно быть 90-120°"
+                angle in 80f..130f -> goods += context.getString(R.string.bs_elbow_good, angle.toInt())
+                angle > 150f -> issues += context.getString(R.string.bs_elbow_straight, angle.toInt())
                 else -> {}
             }
         }
@@ -231,7 +235,7 @@ object PhaseAnalyzer {
 
     // ── Разгон ────────────────────────────────────────────────────────────────
 
-    private fun analyzeAcceleration(frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
+    private fun analyzeAcceleration(context: Context, frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
         // Лучший кадр — пик скорости запястья
         val frame = peakVelocityFrame(frames, hl) ?: bestFrame(frames, hl)
         val lm = frame.landmarks
@@ -249,16 +253,16 @@ object PhaseAnalyzer {
             val dy = hip.y - shoulder.y
             val tilt = Math.toDegrees(Math.atan2(dx.toDouble(), dy.toDouble())).toFloat()
             when {
-                tilt in 8f..25f -> goods += "Хороший прогиб туловища (${tilt.toInt()}°) — добавляет мощь"
-                tilt < 5f -> issues += "Прогнитесь назад при разгоне — это значительно увеличит скорость"
-                tilt > 30f -> issues += "Слишком сильный прогиб (${tilt.toInt()}°) — потеря контроля"
+                tilt in 8f..25f -> goods += context.getString(R.string.accel_tilt_good, tilt.toInt())
+                tilt < 5f -> issues += context.getString(R.string.accel_tilt_low)
+                tilt > 30f -> issues += context.getString(R.string.accel_tilt_high, tilt.toInt())
             }
         }
 
         // Рука тянется вверх
         if (wrist != null && shoulder != null) {
-            if (wrist.y < shoulder.y - 0.1f) goods += "Рука хорошо тянется вверх к мячу"
-            else issues += "Тянитесь выше — запястье должно быть значительно выше плеча"
+            if (wrist.y < shoulder.y - 0.1f) goods += context.getString(R.string.accel_reach_good)
+            else issues += context.getString(R.string.accel_reach_bad)
         }
 
         return PhaseReport(ServePhase.ACCELERATION, goods, issues)
@@ -266,7 +270,7 @@ object PhaseAnalyzer {
 
     // ── Контакт ───────────────────────────────────────────────────────────────
 
-    private fun analyzeContact(frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
+    private fun analyzeContact(context: Context, frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
         // Лучший кадр — максимальная высота запястья (минимальный Y)
         val frame = frames.minByOrNull { f ->
             f.landmarks.getOrNull(hl.racketWrist)?.y ?: 1f
@@ -285,10 +289,10 @@ object PhaseAnalyzer {
         if (shoulder != null && elbow != null && wrist != null) {
             val angle = angleBetween(shoulder, elbow, wrist)
             when {
-                angle in 160f..180f -> goods += "Отличное выпрямление руки при ударе (${angle.toInt()}°)"
-                angle in 145f..160f -> goods += "Рука достаточно выпрямлена (${angle.toInt()}°)"
-                angle in 130f..145f -> issues += "Разогните руку сильнее (${angle.toInt()}°) — нужно 160-175° для максимальной скорости"
-                else -> issues += "Рука сильно согнута при ударе (${angle.toInt()}°) — нужно максимальное выпрямление"
+                angle in 160f..180f -> goods += context.getString(R.string.contact_ext_great, angle.toInt())
+                angle in 145f..160f -> goods += context.getString(R.string.contact_ext_ok, angle.toInt())
+                angle in 130f..145f -> issues += context.getString(R.string.contact_ext_more, angle.toInt())
+                else -> issues += context.getString(R.string.contact_ext_bent, angle.toInt())
             }
         }
 
@@ -298,9 +302,9 @@ object PhaseAnalyzer {
             if (bodyH > 0f) {
                 val contactPct = ((hip.y - wrist.y) / bodyH * 100f).toInt()
                 when {
-                    contactPct > 110 -> goods += "Контакт очень высоко (${contactPct}% роста) — максимальный угол вниз"
-                    contactPct > 90  -> goods += "Хорошая высота контакта (${contactPct}% роста)"
-                    else -> issues += "Тянитесь выше в момент удара (${contactPct}% роста) — контакт слишком низкий"
+                    contactPct > 110 -> goods += context.getString(R.string.contact_h_veryhigh, contactPct)
+                    contactPct > 90  -> goods += context.getString(R.string.contact_h_good, contactPct)
+                    else -> issues += context.getString(R.string.contact_h_low, contactPct)
                 }
             }
         }
@@ -310,7 +314,7 @@ object PhaseAnalyzer {
             val dx = shoulder.x - hip.x
             val dy = hip.y - shoulder.y
             val tilt = Math.toDegrees(Math.atan2(dx.toDouble(), dy.toDouble())).toFloat()
-            if (tilt > 5f) goods += "Прогиб туловища сохраняется до момента удара — хорошо"
+            if (tilt > 5f) goods += context.getString(R.string.contact_tilt_kept)
         }
 
         return PhaseReport(ServePhase.CONTACT, goods, issues)
@@ -318,7 +322,7 @@ object PhaseAnalyzer {
 
     // ── Завершение ────────────────────────────────────────────────────────────
 
-    private fun analyzeFollowThrough(frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
+    private fun analyzeFollowThrough(context: Context, frames: List<PoseFrame>, hl: HandedLandmarks): PhaseReport {
         val frame = frames.lastOrNull() ?: return PhaseReport(ServePhase.FOLLOW_THROUGH, emptyList(), emptyList())
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
@@ -336,13 +340,13 @@ object PhaseAnalyzer {
             else
                 wrist.x > tossHip.x - 0.05f   // левша: запястье ушло вправо
 
-            if (crossedBody) goods += "Ракетка пересекла тело — полноценное завершение"
-            else issues += "Доведите ракетку до противоположного бедра — завершение слишком короткое"
+            if (crossedBody) goods += context.getString(R.string.ft_crossed)
+            else issues += context.getString(R.string.ft_short)
         }
 
         // Рука опустилась ниже плеча
         if (wrist != null && shoulder != null && wrist.y > shoulder.y + 0.05f) {
-            goods += "Рука опустилась вниз после удара — естественное завершение"
+            goods += context.getString(R.string.ft_down)
         }
 
         return PhaseReport(ServePhase.FOLLOW_THROUGH, goods, issues)
