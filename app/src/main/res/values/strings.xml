@@ -64,4 +64,28 @@
     <string name="compare_serve_n">Serve %1$d</string>
     <string name="compare_play">▶  Together</string>
     <string name="compare_pause">⏸  Pause</string>
+
+    <!-- Serve phases -->
+    <string name="phase_idle">Idle</string>
+    <string name="phase_stance">Stance</string>
+    <string name="phase_toss">Toss</string>
+    <string name="phase_trophy">Trophy</string>
+    <string name="phase_backscratch">Backscratch</string>
+    <string name="phase_acceleration">Acceleration</string>
+    <string name="phase_contact">Contact</string>
+    <string name="phase_follow">Follow-through</string>
+    <string name="phase_contact_excl">Contact!</string>
+
+    <!-- Analysis screen -->
+    <string name="analysis_score">Score: %1$d / 100</string>
+    <string name="analysis_serve_header">Serve %1$d  —  %2$d/100</string>
+    <string name="analysis_multi_summary">Serves: %1$d   ·   avg %2$d / 100</string>
+    <string name="analysis_save_gallery">Save to gallery</string>
+    <string name="arm_above">Arm: +%1$d%% above shoulder</string>
+    <string name="arm_below">Arm: %1$d%% below shoulder</string>
+    <string name="export_rendering">Rendering video with pose overlay…</string>
+    <string name="export_error">Export error</string>
+    <string name="export_saved">Video with pose saved to gallery</string>
+    <string name="save_error">Save error</string>
+    <string name="error_generic">Error: %1$s</string>
 </resources>

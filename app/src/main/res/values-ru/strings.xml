@@ -64,4 +64,28 @@
     <string name="compare_serve_n">Подача %1$d</string>
     <string name="compare_play">▶  Вместе</string>
     <string name="compare_pause">⏸  Пауза</string>
+
+    <!-- Serve phases -->
+    <string name="phase_idle">Ожидание</string>
+    <string name="phase_stance">Стойка</string>
+    <string name="phase_toss">Подброс</string>
+    <string name="phase_trophy">Трофей</string>
+    <string name="phase_backscratch">Петля</string>
+    <string name="phase_acceleration">Разгон</string>
+    <string name="phase_contact">Контакт</string>
+    <string name="phase_follow">Завершение</string>
+    <string name="phase_contact_excl">Удар!</string>
+
+    <!-- Analysis screen -->
+    <string name="analysis_score">Оценка: %1$d / 100</string>
+    <string name="analysis_serve_header">Подача %1$d  —  %2$d/100</string>
+    <string name="analysis_multi_summary">Подач: %1$d   ·   средняя %2$d / 100</string>
+    <string name="analysis_save_gallery">Сохранить в галерею</string>
+    <string name="arm_above">Рука: +%1$d%% выше плеча</string>
+    <string name="arm_below">Рука: %1$d%% ниже плеча</string>
+    <string name="export_rendering">Рендеринг видео с наложением позы…</string>
+    <string name="export_error">Ошибка экспорта</string>
+    <string name="export_saved">Видео с позой сохранено в галерею</string>
+    <string name="save_error">Ошибка сохранения</string>
+    <string name="error_generic">Ошибка: %1$s</string>
 </resources>

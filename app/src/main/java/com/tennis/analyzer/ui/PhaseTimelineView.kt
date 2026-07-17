@@ -49,14 +49,14 @@ class PhaseTimelineView(context: Context) : View(context) {
     )
 
     private val phaseShortNames = mapOf(
-        ServePhase.IDLE           to "Ожид.",
-        ServePhase.READY_STANCE   to "Стойка",
-        ServePhase.TOSS           to "Подброс",
-        ServePhase.TROPHY         to "Трофей",
-        ServePhase.BACKSCRATCH    to "За спиной",
-        ServePhase.ACCELERATION   to "Разгон",
-        ServePhase.CONTACT        to "Контакт",
-        ServePhase.FOLLOW_THROUGH to "Заверш."
+        ServePhase.IDLE           to context.getString(com.tennis.analyzer.R.string.phase_idle),
+        ServePhase.READY_STANCE   to context.getString(com.tennis.analyzer.R.string.phase_stance),
+        ServePhase.TOSS           to context.getString(com.tennis.analyzer.R.string.phase_toss),
+        ServePhase.TROPHY         to context.getString(com.tennis.analyzer.R.string.phase_trophy),
+        ServePhase.BACKSCRATCH    to context.getString(com.tennis.analyzer.R.string.phase_backscratch),
+        ServePhase.ACCELERATION   to context.getString(com.tennis.analyzer.R.string.phase_acceleration),
+        ServePhase.CONTACT        to context.getString(com.tennis.analyzer.R.string.phase_contact),
+        ServePhase.FOLLOW_THROUGH to context.getString(com.tennis.analyzer.R.string.phase_follow)
     )
 
     fun setData(

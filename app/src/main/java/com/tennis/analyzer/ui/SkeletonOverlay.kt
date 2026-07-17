@@ -302,16 +302,16 @@ class SkeletonOverlay @JvmOverloads constructor(
         ServePhase.FOLLOW_THROUGH -> Color.rgb(156, 39,  176)
     }
 
-    private fun phaseLabel(phase: ServePhase) = when (phase) {
-        ServePhase.IDLE           -> "Готов"
-        ServePhase.READY_STANCE   -> "Стойка"
-        ServePhase.TOSS           -> "Подброс"
-        ServePhase.TROPHY         -> "Трофей"
-        ServePhase.BACKSCRATCH    -> "За спиной"
-        ServePhase.ACCELERATION   -> "Разгон"
-        ServePhase.CONTACT        -> "Контакт"
-        ServePhase.FOLLOW_THROUGH -> "Завершение"
-    }
+    private fun phaseLabel(phase: ServePhase) = context.getString(when (phase) {
+        ServePhase.IDLE           -> com.tennis.analyzer.R.string.phase_idle
+        ServePhase.READY_STANCE   -> com.tennis.analyzer.R.string.phase_stance
+        ServePhase.TOSS           -> com.tennis.analyzer.R.string.phase_toss
+        ServePhase.TROPHY         -> com.tennis.analyzer.R.string.phase_trophy
+        ServePhase.BACKSCRATCH    -> com.tennis.analyzer.R.string.phase_backscratch
+        ServePhase.ACCELERATION   -> com.tennis.analyzer.R.string.phase_acceleration
+        ServePhase.CONTACT        -> com.tennis.analyzer.R.string.phase_contact
+        ServePhase.FOLLOW_THROUGH -> com.tennis.analyzer.R.string.phase_follow
+    })
 
     private fun scoreColor(score: Float) = when {
         score >= 80f -> Color.rgb(76, 175, 80)

@@ -14,6 +14,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.ComponentActivity
+import com.tennis.analyzer.R
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -102,7 +103,7 @@ class AnalysisActivity : ComponentActivity() {
         if (windows.size <= 1) {
             val (metrics, _) = ServeAnalyzer.analyze(frames, isLeftHanded)
             val report = PhaseAnalyzer.analyze(frames, phases, isLeftHanded)
-            scoreText.text = "Оценка: ${metrics.overallScore.toInt()} / 100"
+            scoreText.text = getString(R.string.analysis_score, metrics.overallScore.toInt())
             reportContainer.removeAllViews()
             appendPhaseReport(report.phases)
             return
@@ -117,11 +118,11 @@ class AnalysisActivity : ComponentActivity() {
             val subPhases = phases.filter { it.timeMs in window.first..window.second }
             val (m, _) = ServeAnalyzer.analyze(sub, isLeftHanded)
             scores.add(m.overallScore.toInt())
-            addServeHeader("Подача ${i + 1}  —  ${m.overallScore.toInt()}/100")
+            addServeHeader(getString(R.string.analysis_serve_header, i + 1, m.overallScore.toInt()))
             appendPhaseReport(PhaseAnalyzer.analyze(sub, subPhases, isLeftHanded).phases)
         }
         val avg = if (scores.isEmpty()) 0 else scores.average().toInt()
-        scoreText.text = "Подач: ${scores.size}   ·   средняя $avg / 100"
+        scoreText.text = getString(R.string.analysis_multi_summary, scores.size, avg)
     }
 
     /** Окна подач: [серединаДоПредыдущей .. серединаДоСледующей]. */
@@ -186,13 +187,13 @@ class AnalysisActivity : ComponentActivity() {
     }
 
     private fun phaseName(phase: ServePhase) = when (phase) {
-        ServePhase.READY_STANCE   -> "Стойка"
-        ServePhase.TOSS           -> "Подброс"
-        ServePhase.TROPHY         -> "Трофей"
-        ServePhase.BACKSCRATCH    -> "Бэкскрэтч"
-        ServePhase.ACCELERATION   -> "Разгон"
-        ServePhase.CONTACT        -> "Контакт"
-        ServePhase.FOLLOW_THROUGH -> "Завершение"
+        ServePhase.READY_STANCE   -> getString(R.string.phase_stance)
+        ServePhase.TOSS           -> getString(R.string.phase_toss)
+        ServePhase.TROPHY         -> getString(R.string.phase_trophy)
+        ServePhase.BACKSCRATCH    -> getString(R.string.phase_backscratch)
+        ServePhase.ACCELERATION   -> getString(R.string.phase_acceleration)
+        ServePhase.CONTACT        -> getString(R.string.phase_contact)
+        ServePhase.FOLLOW_THROUGH -> getString(R.string.phase_follow)
         else                      -> phase.name
     }
 
@@ -224,8 +225,8 @@ class AnalysisActivity : ComponentActivity() {
         val shoulder = frame.landmarks.getOrNull(hl.racketShoulder)
         if (wrist != null && shoulder != null) {
             val diffPct = ((shoulder.y - wrist.y) * 100).toInt()
-            val heightStr = if (diffPct >= 0) "+${diffPct}% выше плеча" else "${diffPct}% ниже плеча"
-            parts += "Рука: $heightStr"
+            parts += if (diffPct >= 0) getString(R.string.arm_above, diffPct)
+                     else getString(R.string.arm_below, diffPct)
         }
 
 
@@ -241,14 +242,14 @@ class AnalysisActivity : ComponentActivity() {
     }
 
     private fun phaseLabel(phase: ServePhase) = when (phase) {
-        ServePhase.IDLE           -> "⬤  Ожидание"
-        ServePhase.READY_STANCE   -> "⬤  Стойка"
-        ServePhase.TOSS           -> "⬤  Подброс"
-        ServePhase.TROPHY         -> "⬤  Трофей"
-        ServePhase.BACKSCRATCH    -> "⬤  Ракетка за спиной"
-        ServePhase.ACCELERATION   -> "⬤  Разгон"
-        ServePhase.CONTACT        -> "⬤  Контакт / Удар"
-        ServePhase.FOLLOW_THROUGH -> "⬤  Завершение"
+        ServePhase.IDLE           -> "⬤  " + getString(R.string.phase_idle)
+        ServePhase.READY_STANCE   -> "⬤  " + getString(R.string.phase_stance)
+        ServePhase.TOSS           -> "⬤  " + getString(R.string.phase_toss)
+        ServePhase.TROPHY         -> "⬤  " + getString(R.string.phase_trophy)
+        ServePhase.BACKSCRATCH    -> "⬤  " + getString(R.string.phase_backscratch)
+        ServePhase.ACCELERATION   -> "⬤  " + getString(R.string.phase_acceleration)
+        ServePhase.CONTACT        -> "⬤  " + getString(R.string.phase_contact)
+        ServePhase.FOLLOW_THROUGH -> "⬤  " + getString(R.string.phase_follow)
     }
 
     // ── Сохранение в галерею ─────────────────────────────────────────────────
@@ -257,7 +258,7 @@ class AnalysisActivity : ComponentActivity() {
         saveToGalleryBtn.setOnClickListener {
             @Suppress("DEPRECATION")
             val progress = ProgressDialog(this).apply {
-                setMessage("Рендеринг видео с наложением позы…")
+                setMessage(getString(R.string.export_rendering))
                 setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
                 max = 100; setCancelable(false)
                 show()
@@ -278,7 +279,7 @@ class AnalysisActivity : ComponentActivity() {
                     if (ok) {
                         saveFileToGallery(tmp)
                     } else {
-                        Toast.makeText(this, "Ошибка экспорта", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.export_error), Toast.LENGTH_SHORT).show()
                     }
                 }
             }.start()
@@ -297,12 +298,12 @@ class AnalysisActivity : ComponentActivity() {
                 contentResolver.openOutputStream(uri)?.use { out ->
                     file.inputStream().use { it.copyTo(out) }
                 }
-                Toast.makeText(this, "Видео с позой сохранено в галерею", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, getString(R.string.export_saved), Toast.LENGTH_LONG).show()
             } else {
-                Toast.makeText(this, "Ошибка сохранения", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.save_error), Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
-            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_generic, e.message ?: ""), Toast.LENGTH_SHORT).show()
         } finally {
             file.delete()
         }
