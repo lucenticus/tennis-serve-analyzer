@@ -507,7 +507,7 @@ class MainActivity : ComponentActivity() {
         for (window in serveWindows(result.frames, result.serveContacts)) {
             val sub = result.frames.filter { it.timestampMs in window.first..window.second }
             if (sub.size < 3) continue
-            val (metrics, advice) = ServeAnalyzer.analyze(sub, isLeftHanded)
+            val (metrics, advice) = ServeAnalyzer.analyze(applicationContext, sub, isLeftHanded)
             recentScores.add(metrics.overallScore)
             lastScore = metrics.overallScore.toInt()
             lastTip = advice.firstOrNull()?.textRu
@@ -677,7 +677,7 @@ class MainActivity : ComponentActivity() {
         scope.launch {
             realtimeServeCount.value += 1
             val (metrics, advice) = withContext(Dispatchers.Default) {
-                ServeAnalyzer.analyze(event.frames, isLeftHanded)
+                ServeAnalyzer.analyze(applicationContext, event.frames, isLeftHanded)
             }
             recentScores.add(metrics.overallScore)
             while (recentScores.size > 15) recentScores.removeAt(0)

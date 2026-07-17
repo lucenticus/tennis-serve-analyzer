@@ -1,5 +1,6 @@
 package com.tennis.analyzer.analysis
 
+import com.tennis.analyzer.R
 import com.tennis.analyzer.pose.HandedLandmarks
 import com.tennis.analyzer.pose.LandmarkIndex
 import com.tennis.analyzer.pose.PoseFrame
@@ -22,7 +23,7 @@ data class ServeAdvice(
 
 object ServeAnalyzer {
 
-    fun analyze(frames: List<PoseFrame>, isLeftHanded: Boolean = false): Pair<ServeMetrics, List<ServeAdvice>> {
+    fun analyze(context: android.content.Context, frames: List<PoseFrame>, isLeftHanded: Boolean = false): Pair<ServeMetrics, List<ServeAdvice>> {
         val hl = HandedLandmarks(isLeftHanded)
         if (frames.isEmpty()) return ServeMetrics(0f,0f,0f,0f,0f,0f) to emptyList()
         val contactFrame = findContactFrame(frames, hl) ?: frames[frames.size / 2]
@@ -45,7 +46,7 @@ object ServeAnalyzer {
             overallScore = overall
         )
 
-        return metrics to generateAdvice(metrics, isLeftHanded)
+        return metrics to generateAdvice(context, metrics, isLeftHanded)
     }
 
     // Кадр с максимальной скоростью запястья = момент контакта
@@ -145,30 +146,31 @@ object ServeAnalyzer {
         return ((elbowScore * 0.3f + trunkScore * 0.2f + shoulderScore * 0.3f + legs * 0.2f) * 100f)
     }
 
-    fun generateAdvice(metrics: ServeMetrics, isLeftHanded: Boolean = false): List<ServeAdvice> {
-        val tossShoulderName = if (isLeftHanded) "правое" else "левое"
+    fun generateAdvice(context: android.content.Context, metrics: ServeMetrics, isLeftHanded: Boolean = false): List<ServeAdvice> {
+        fun s(id: Int, vararg args: Any) = context.getString(id, *args)
+        val tossShoulderName = s(if (isLeftHanded) R.string.shoulder_right else R.string.shoulder_left)
         val advice = mutableListOf<ServeAdvice>()
 
         if (metrics.elbowAngleAtContact < 150f) {
-            advice += ServeAdvice(1, "Распрямите руку в момент удара — локоть должен быть почти прямым")
+            advice += ServeAdvice(1, s(R.string.adv_straighten_arm))
         } else if (metrics.elbowAngleAtContact > 180f) {
-            advice += ServeAdvice(1, "Слегка согните локоть при контакте с мячом")
+            advice += ServeAdvice(1, s(R.string.adv_bend_elbow))
         }
 
         if (metrics.trunkTiltAngle < 8f) {
-            advice += ServeAdvice(2, "Прогнитесь назад при замахе — это добавит мощь подаче")
+            advice += ServeAdvice(2, s(R.string.adv_arch_back))
         }
 
         if (metrics.shoulderRotation < 60f) {
-            advice += ServeAdvice(2, "Разверните плечи сильнее — $tossShoulderName плечо должно быть направлено к сетке")
+            advice += ServeAdvice(2, s(R.string.adv_turn_shoulders, tossShoulderName))
         }
 
         if (metrics.legDriveScore < 0.4f) {
-            advice += ServeAdvice(3, "Подключайте ноги к удару — согните колени и оттолкнитесь от земли")
+            advice += ServeAdvice(3, s(R.string.adv_use_legs))
         }
 
         if (metrics.contactPointHeight > 0.35f) {
-            advice += ServeAdvice(3, "Тянитесь выше в точке контакта — поднимите ракетку максимально вверх")
+            advice += ServeAdvice(3, s(R.string.adv_reach_higher))
         }
 
         return advice.sortedBy { it.priority }.take(2)

@@ -101,7 +101,7 @@ class AnalysisActivity : ComponentActivity() {
         val windows = serveWindows(frames, contacts)
 
         if (windows.size <= 1) {
-            val (metrics, _) = ServeAnalyzer.analyze(frames, isLeftHanded)
+            val (metrics, _) = ServeAnalyzer.analyze(applicationContext, frames, isLeftHanded)
             val report = PhaseAnalyzer.analyze(frames, phases, isLeftHanded)
             scoreText.text = getString(R.string.analysis_score, metrics.overallScore.toInt())
             reportContainer.removeAllViews()
@@ -116,7 +116,7 @@ class AnalysisActivity : ComponentActivity() {
             val sub = frames.filter { it.timestampMs in window.first..window.second }
             if (sub.size < 3) continue
             val subPhases = phases.filter { it.timeMs in window.first..window.second }
-            val (m, _) = ServeAnalyzer.analyze(sub, isLeftHanded)
+            val (m, _) = ServeAnalyzer.analyze(applicationContext, sub, isLeftHanded)
             scores.add(m.overallScore.toInt())
             addServeHeader(getString(R.string.analysis_serve_header, i + 1, m.overallScore.toInt()))
             appendPhaseReport(PhaseAnalyzer.analyze(sub, subPhases, isLeftHanded).phases)

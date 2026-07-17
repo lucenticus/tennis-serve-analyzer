@@ -108,4 +108,14 @@
     <string name="advice_card_title">💡 Tips</string>
     <string name="voice_score">Serve score: %1$d out of a hundred</string>
     <string name="voice_training_mode">Training mode. Perform a serve.</string>
+
+    <!-- Overall serve advice -->
+    <string name="shoulder_right">right</string>
+    <string name="shoulder_left">left</string>
+    <string name="adv_straighten_arm">Straighten your arm at contact — the elbow should be almost straight</string>
+    <string name="adv_bend_elbow">Bend the elbow slightly at ball contact</string>
+    <string name="adv_arch_back">Arch back during the wind-up — it adds power to the serve</string>
+    <string name="adv_turn_shoulders">Turn your shoulders more — your %1$s shoulder should point at the net</string>
+    <string name="adv_use_legs">Use your legs — bend your knees and push off the ground</string>
+    <string name="adv_reach_higher">Reach higher at contact — extend the racket as high as possible</string>
 </resources>

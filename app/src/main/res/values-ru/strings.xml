@@ -108,4 +108,14 @@
     <string name="advice_card_title">💡 Советы</string>
     <string name="voice_score">Оценка подачи: %1$d из ста</string>
     <string name="voice_training_mode">Режим тренировки. Выполняй подачу.</string>
+
+    <!-- Overall serve advice -->
+    <string name="shoulder_right">правое</string>
+    <string name="shoulder_left">левое</string>
+    <string name="adv_straighten_arm">Распрямите руку в момент удара — локоть должен быть почти прямым</string>
+    <string name="adv_bend_elbow">Слегка согните локоть при контакте с мячом</string>
+    <string name="adv_arch_back">Прогнитесь назад при замахе — это добавит мощь подаче</string>
+    <string name="adv_turn_shoulders">Разверните плечи сильнее — %1$s плечо должно быть направлено к сетке</string>
+    <string name="adv_use_legs">Подключайте ноги к удару — согните колени и оттолкнитесь от земли</string>
+    <string name="adv_reach_higher">Тянитесь выше в точке контакта — поднимите ракетку максимально вверх</string>
 </resources>
