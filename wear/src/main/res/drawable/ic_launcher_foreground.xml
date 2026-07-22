@@ -3,98 +3,26 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Adaptive icon — safe zone ~26..82. Профессиональная поза подачи, вид сбоку.
-         Крупный монолитный силуэт для читаемости на маленьком размере. -->
-
-    <!-- МЯЧ в высшей точке подброса -->
+    <!-- Теннисный мяч -->
     <path
-        android:fillColor="#DDE85A"
-        android:pathData="M84,20 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:fillColor="#D4E157"
+        android:pathData="M54,28 m-26,0 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0" />
+    <!-- Лёгкая тень снизу для объёма -->
+    <path
+        android:fillColor="#C0CA33"
+        android:pathData="M54,80 m-26,0 a26,26 0 0,0 52,0 a26,26 0 0,0 -52,0 Z"
+        android:fillAlpha="0.0" />
+    <!-- Швы мяча (белые дуги) -->
     <path
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="0.9"
+        android:strokeWidth="3.2"
         android:fillColor="#00000000"
         android:strokeLineCap="round"
-        android:pathData="M80,18.5 Q84,21 88,18.5" />
-
-    <!-- РАКЕТКА: рамка (обруч) — заполненный эллипс, чтобы читался как единая форма -->
+        android:pathData="M40,30 C30,42 30,66 40,78" />
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M74,36
-                          m-8,-10
-                          a8,10 0 1,1 16,0
-                          a8,10 0 1,1 -16,0" />
-    <!-- ВНУТРЕННЯЯ ОБЛАСТЬ ракетки (полупрозрачная) — эффект «дырки» без evenodd -->
-    <path
-        android:fillColor="#0F3D2E"
-        android:pathData="M74,36
-                          m-5,-7
-                          a5,7 0 1,1 10,0
-                          a5,7 0 1,1 -10,0" />
-
-    <!-- ШЕЯ РАКЕТКИ → рука -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M72,45 L76,45 L74,52 L70,52 Z" />
-
-    <!-- БЬЮЩАЯ РУКА полностью выпрямлена (плечо → запястье → ракетка) -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M50,48
-                          L 55,46
-                          L 62,46
-                          L 72,46
-                          L 74,52
-                          L 62,52
-                          L 55,54
-                          L 50,54 Z" />
-
-    <!-- ГОЛОВА (профиль, слегка запрокинута назад) -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M46,44 m-6,-1 a6,7 0 1,0 12,0 a6,7 0 1,0 -12,0" />
-
-    <!-- ТОРС с прогибом назад (arch back) — крупный, монолитный -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M40,50
-                          C 34,58 35,68 40,74
-                          L 56,74
-                          C 58,64 56,54 54,50 Z" />
-
-    <!-- СВОБОДНАЯ РУКА (левая) — тянется назад-вниз, следуя за движением корпуса -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M42,54
-                          L 34,60
-                          L 26,66
-                          L 24,70
-                          L 30,68
-                          L 38,62
-                          L 44,58 Z" />
-
-    <!-- ПЕРЕДНЯЯ (опорная) НОГА — согнута в колене, планка вперёд -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M50,74
-                          L 55,84
-                          L 62,94
-                          L 70,96
-                          L 72,98
-                          L 62,98
-                          L 55,94
-                          L 48,84
-                          L 45,74 Z" />
-
-    <!-- ЗАДНЯЯ НОГА — оттолкнулась, поднята назад-вверх (характерное движение подачи) -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M42,74
-                          L 35,80
-                          L 26,86
-                          L 20,88
-                          L 22,90
-                          L 30,90
-                          L 40,86
-                          L 46,80 Z" />
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"
+        android:pathData="M68,30 C78,42 78,66 68,78" />
 </vector>
