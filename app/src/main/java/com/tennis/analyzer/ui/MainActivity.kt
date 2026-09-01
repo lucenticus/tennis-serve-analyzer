@@ -106,6 +106,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Сбор крашей — как можно раньше, чтобы поймать всё, что может случиться дальше
+        com.tennis.analyzer.telemetry.CrashReporting.init(this)
+
         // Не гасим экран, пока приложение открыто (съёмка со штатива, управление с часов)
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 

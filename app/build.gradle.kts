@@ -129,5 +129,9 @@ dependencies {
     // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
+    // AppMetrica (Yandex) — сбор крашей и базовой аналитики использования.
+    // Выбран вместо Firebase Crashlytics: работает без VPN у российской аудитории RuStore.
+    implementation("io.appmetrica.analytics:analytics:8.5.1")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

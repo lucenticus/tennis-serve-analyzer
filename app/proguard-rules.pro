@@ -20,6 +20,10 @@
 -keep class com.google.android.gms.wearable.** { *; }
 -dontwarn com.google.android.gms.**
 
+# AppMetrica (сбор крашей) — своих consumer-rules должно хватать, но keep на всякий случай
+-keep class io.appmetrica.analytics.** { *; }
+-dontwarn io.appmetrica.analytics.**
+
 # Отсутствующие классы, на которые ссылаются либы (безопасно игнорировать в R8)
 -dontwarn com.google.mediapipe.proto.CalculatorProfileProto$CalculatorProfile
 -dontwarn com.google.mediapipe.proto.GraphTemplateProto$CalculatorGraphTemplate
