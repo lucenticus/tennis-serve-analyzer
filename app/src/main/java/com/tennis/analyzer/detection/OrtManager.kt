@@ -22,11 +22,26 @@ object OrtManager {
      * существует в природе (проверено распаковкой полного qnn-runtime-2.42.0.aar). Для
      * v66 и старее у Qualcomm есть только отдельный, более старый "Dsp"-бэкенд
      * (libQnnDsp.so + libQnnDspV66Skel/Stub.so) — другой .so, другой набор опций
-     * (никаких htp_performance_mode/enable_htp_fp16_precision, они Htp-специфичны).
-     * На Hexagon v66 попытка через "Htp" создаёт сессию без ошибки (сама libQnnHtp.so
-     * грузится), но реального исполнения на DSP не происходит — инференс идёт на
-     * ~уровне CPU (100–300мс на Snapdragon 865); warm-up-проверка это ловит и мы
+     * (htp_performance_mode Htp-специфична). На Hexagon v66 попытка через "Htp" создаёт
+     * сессию без ошибки (сама libQnnHtp.so грузится), но реального исполнения на DSP не
+     * происходит — инференс идёт на ~уровне CPU; warm-up-проверка это ловит и мы
      * переходим к попытке через "Dsp".
+     *
+     * Модели (yolov8n-pose.onnx, yolov8n.onnx) статически квантованы в INT8 (QDQ-формат,
+     * per-channel веса, калибровка на 100 изображениях COCO128, detection-head
+     * "model.22.*" (namespace-префикс узлов "/model.22/") сознательно оставлен в FP32 —
+     * точность там сильно проседает при
+     * квантовании, а по FLOPs он пренебрежимо мал по сравнению с backbone/neck).
+     * Это принципиально для Hexagon: тензорные ядра HTP/DSP — в первую очередь
+     * INT8/INT16-акселераторы, FP16 на HTP поддерживается лишь частично (только
+     * v73+), а на DSP v66 почти не поддерживается вообще. Раньше здесь передавался
+     * enable_htp_fp16_precision=1 для FP32-модели — то есть QNN гонял её в режиме
+     * "через силу" без использования целочисленных тензорных ядер. С INT8 QDQ-моделью
+     * этот флаг не нужен (и не имеет смысла — квантованные Conv/MatMul узлы уже
+     * оперируют int8 через явные QuantizeLinear/DequantizeLinear в графе, EP сам
+     * подхватывает нужный acceleration path). Вход/выход остаются float32
+     * ([1,3,640,640] / [1,84,8400] и [1,56,8400]) — препроцессинг на Kotlin-стороне
+     * не менялся.
      *
      * XNNPACK сюда сознательно не включён: используемая сборка
      * com.microsoft.onnxruntime:onnxruntime-android-qnn не компилирует в себя
@@ -51,10 +66,11 @@ object OrtManager {
         tryQnnBackend(
             bytes, tag,
             backend = "HTP",
+            // Модель уже INT8 QDQ — enable_htp_fp16_precision не нужен (и не подходит
+            // квантованному графу, см. большой комментарий у createSession).
             options = mapOf(
-                "backend_path"              to "libQnnHtp.so",
-                "htp_performance_mode"      to "burst",
-                "enable_htp_fp16_precision" to "1"
+                "backend_path"         to "libQnnHtp.so",
+                "htp_performance_mode" to "burst"
             )
         )
 
@@ -62,8 +78,8 @@ object OrtManager {
         tryQnnBackend(
             bytes, tag,
             backend = "DSP",
-            // Старый бэкенд для Hexagon v66 (Snapdragon 855/865 и т.п.) — Htp-специфичные
-            // опции (htp_performance_mode, enable_htp_fp16_precision) сюда не подходят.
+            // Старый бэкенд для Hexagon v66 (Snapdragon 855/865 и т.п.) — Htp-специфичная
+            // опция htp_performance_mode сюда не подходит.
             options = mapOf("backend_path" to "libQnnDsp.so")
         )
 

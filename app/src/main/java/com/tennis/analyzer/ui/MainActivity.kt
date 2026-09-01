@@ -476,6 +476,9 @@ class MainActivity : ComponentActivity() {
 
             videoAnalyzer.isLeftHanded = isLeftHanded
             com.tennis.analyzer.wear.WearLink.sendProgress(this@MainActivity, 0)
+            // Замер чистого времени инференса (без ожидания выбора файла и без UI) —
+            // для сравнения FP32 vs INT8 моделей между сборками.
+            val t0 = System.currentTimeMillis()
             val result = withContext(Dispatchers.IO) {
                 videoAnalyzer.analyze(tmpFile) { done, total ->
                     val frac = done.toFloat() / total.coerceAtLeast(1)
@@ -485,6 +488,8 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+            val elapsedMs = System.currentTimeMillis() - t0
+            Log.i("MainActivity", "Analysis timing: ${elapsedMs}ms for ${result.frames.size} frames (${(elapsedMs.toDouble() / result.frames.size.coerceAtLeast(1)).let { "%.1f".format(it) }}ms/frame)")
             setAnalyzing(false)
             launchAnalysisActivity(tmpFile, result)
         }
