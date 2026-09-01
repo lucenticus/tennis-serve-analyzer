@@ -78,6 +78,7 @@
     <string name="phase_follow">Follow-through</string>
 
     <!-- Analysis screen -->
+    <string name="no_person_detected">No person found in the video — make sure you\'re fully in frame and try again</string>
     <string name="analysis_score">Score: %1$d / 100</string>
     <string name="analysis_multi_summary">Serves: %1$d   ·   avg %2$d / 100</string>
     <string name="arm_above">Arm: +%1$d%% above shoulder</string>

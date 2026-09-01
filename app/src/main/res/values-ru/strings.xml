@@ -78,6 +78,7 @@
     <string name="phase_follow">Завершение</string>
 
     <!-- Analysis screen -->
+    <string name="no_person_detected">Человек не найден на видео — убедитесь, что вы полностью в кадре, и попробуйте снова</string>
     <string name="analysis_score">Оценка: %1$d / 100</string>
     <string name="analysis_multi_summary">Подач: %1$d   ·   средняя %2$d / 100</string>
     <string name="arm_above">Рука: +%1$d%% выше плеча</string>

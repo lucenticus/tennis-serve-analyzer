@@ -4,6 +4,7 @@ import android.Manifest
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import kotlinx.coroutines.delay
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -496,6 +497,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun launchAnalysisActivity(videoFile: java.io.File, result: com.tennis.analyzer.analysis.VideoAnalysisResult) {
+        // Человек ни на одном кадре не найден (ни грубым, ни точным проходом) — result.frames
+        // пуст только в этом случае: PoseFrame добавляется либо при реальной детекции, либо
+        // при переносе landmarks с предыдущего кадра, так что пустой список означает, что
+        // YOLO-поза не сработала вообще ни разу за всё видео. Не показываем экран анализа
+        // с бутафорским "Стойка"/0 из 100 и не рисуем скелет — просто сообщаем и выходим.
+        if (result.frames.isEmpty()) {
+            Log.w("MainActivity", "No person detected in the whole video — skipping analysis screen")
+            Toast.makeText(this, getString(R.string.no_person_detected), Toast.LENGTH_LONG).show()
+            com.tennis.analyzer.wear.WearLink.sendResult(this, -1, null)
+            videoFile.delete()
+            return
+        }
+
         // Фазы каждой подачи отдельно + IDLE-разрывы между ними
         val phases = detectAllServePhases(result.frames, result.serveContacts)
 
