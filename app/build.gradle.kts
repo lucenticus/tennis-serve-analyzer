@@ -122,9 +122,10 @@ dependencies {
     // Канал связи с часами (Wear OS компаньон через Data Layer)
     implementation("com.google.android.gms:play-services-wearable:18.2.0")
 
-    // Реклама (AdMob) + согласие пользователя (UMP) для бесплатной версии
-    implementation("com.google.android.gms:play-services-ads:23.6.0")
-    implementation("com.google.android.ump:user-messaging-platform:3.1.0")
+    // Реклама (Yandex Ads) для бесплатной версии.
+    // AdMob не подходит: Google не даёт создавать новые AdMob-аккаунты из России
+    // (санкции OFAC), а RuStore-аудитория — российская. Yandex Ads работает без VPN.
+    implementation("com.yandex.android:mobileads:8.4.0")
 
     // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")

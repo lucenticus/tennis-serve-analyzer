@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
-    <!-- Для рекламы (AdMob) и сбора крашей (AppMetrica) -->
+    <!-- Для рекламы (Yandex Ads) и сбора крашей (AppMetrica) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -18,11 +18,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TennisAnalyzer">
-
-        <!-- AdMob App ID. ⚠️ ЗАМЕНИ на свой перед публикацией (сейчас тестовый Google). -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
 
         <!-- Qualcomm FastRPC vendor-библиотека для QNN HTP (Hexagon NPU).
              Без объявления Android 12+ не даёт приложению dlopen её из /vendor/lib64,
