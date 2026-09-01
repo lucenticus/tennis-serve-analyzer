@@ -5,12 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -39,11 +41,14 @@ class ComparisonActivity : ComponentActivity() {
         if (paths.isEmpty()) { finish(); return }
 
         setContent {
+            // Стартовая скорость — та же, что и по умолчанию на экране анализа (0.3×):
+            // техника лучше видна в замедлении, сразу с открытия экрана сравнения.
             val players = remember {
                 paths.map { path ->
                     ExoPlayer.Builder(this).build().apply {
                         setMediaItem(MediaItem.fromUri(Uri.fromFile(File(path))))
                         repeatMode = Player.REPEAT_MODE_ALL
+                        playbackParameters = PlaybackParameters(0.3f)
                         prepare()
                     }
                 }
@@ -51,7 +56,7 @@ class ComparisonActivity : ComponentActivity() {
             DisposableEffect(Unit) { onDispose { players.forEach { it.release() } } }
 
             var isPlaying by remember { mutableStateOf(false) }
-            var speed by remember { mutableStateOf(1f) }
+            var speed by remember { mutableStateOf(0.3f) }
             var position by remember { mutableStateOf(0f) }
             val duration = remember(players) {
                 players.maxOfOrNull { it.duration.coerceAtLeast(1L) } ?: 1L
@@ -114,16 +119,32 @@ class ComparisonActivity : ComponentActivity() {
                             shape = RoundedCornerShape(24.dp)
                         ) { Text(stringResource(if (isPlaying) R.string.compare_pause else R.string.compare_play), color = Color.White) }
 
-                        // Скорость
-                        val speeds = listOf(0.25f, 0.5f, 1f)
-                        OutlinedButton(
-                            onClick = {
-                                speed = speeds[(speeds.indexOf(speed) + 1) % speeds.size]
-                                players.forEach { it.playbackParameters = PlaybackParameters(speed) }
-                            },
-                            shape = RoundedCornerShape(24.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                        ) { Text("${speed}x") }
+                        // Скорость — тот же набор значений и тот же паттерн (видимые кнопки,
+                        // не цикл по одной), что и на экране анализа: одна и та же функция
+                        // (замедленный повтор техники) должна выглядеть и работать одинаково
+                        // на соседних экранах.
+                        Row(
+                            Modifier.clip(RoundedCornerShape(20.dp)).background(Color(0xFF2A2A2A)).padding(3.dp)
+                        ) {
+                            for (sp in listOf(0.15f, 0.3f, 0.5f, 1f)) {
+                                val selected = kotlin.math.abs(speed - sp) < 0.001f
+                                Box(
+                                    Modifier
+                                        .clip(RoundedCornerShape(17.dp))
+                                        .background(if (selected) Color(0xFF7CB342) else Color.Transparent)
+                                        .clickable {
+                                            speed = sp
+                                            players.forEach { it.playbackParameters = PlaybackParameters(sp) }
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                                ) {
+                                    Text(
+                                        "${sp}×", fontSize = 13.sp,
+                                        color = if (selected) Color.White else Color(0xFFAAAAAA)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

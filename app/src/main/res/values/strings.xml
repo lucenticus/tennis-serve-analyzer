@@ -37,7 +37,7 @@
     <string name="onb3_title">How to film</string>
     <string name="onb3_body">Place the phone side-on to the court, ideally on a tripod. Leave room above so the ball toss fits in frame. Tap record on screen or from the watch.</string>
     <string name="onb4_title">Handedness &amp; watch</string>
-    <string name="onb4_body">Set your dominant hand with the ✋ button at top right. With a Galaxy Watch you can start recording and see your score and tip right on your wrist.</string>
+    <string name="onb4_body">Set your dominant hand in Settings (⚙️ top right). With a Galaxy Watch you can start recording and see your score and tip right on your wrist.</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
@@ -52,12 +52,22 @@
     <string name="voice_off">Off</string>
     <string name="settings_clear_history">Clear serve history</string>
     <string name="settings_history_cleared">History cleared</string>
+    <string name="settings_clear_history_title">Clear all serve history?</string>
+    <string name="settings_clear_history_body">All recorded videos and scores will be permanently deleted. This can\'t be undone.</string>
+    <string name="settings_privacy">Privacy policy</string>
     <string name="settings_source">Source code (AGPL-3.0)</string>
     <string name="settings_source_sub">Open on GitHub</string>
     <string name="settings_about">Tennis Serve Analyzer\nLicense: AGPL-3.0</string>
+    <string name="settings_version">Version %1$s</string>
+
+    <!-- Shared confirm/cancel -->
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
 
     <!-- History &amp; comparison -->
     <string name="history_title">Serve history</string>
+    <string name="history_delete_title">Delete this serve?</string>
+    <string name="history_delete_body">The video and score will be permanently deleted. This can\'t be undone.</string>
     <string name="history_hint_select">Select two serves to compare</string>
     <string name="history_selected">Selected: %1$d/2</string>
     <string name="history_empty">No records yet.\nRecord and analyze a serve.</string>
@@ -84,6 +94,7 @@
     <string name="analysis_multi_summary">Serves: %1$d   ·   avg %2$d / 100</string>
     <string name="arm_above">Arm: +%1$d%% above shoulder</string>
     <string name="arm_below">Arm: %1$d%% below shoulder</string>
+    <string name="export_save_button">Save video with pose overlay to gallery</string>
     <string name="export_rendering">Rendering video with pose overlay…</string>
     <string name="export_error">Export error</string>
     <string name="export_saved">Video with pose saved to gallery</string>

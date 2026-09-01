@@ -51,7 +51,7 @@ class AnalysisActivity : ComponentActivity() {
     private lateinit var phaseBar: PhaseTimelineView
     private lateinit var seekBar: SeekBar
     private lateinit var playPauseBtn: Button
-    private lateinit var saveToGalleryBtn: Button
+    private lateinit var saveToGalleryBtn: ImageButton
     private lateinit var speedSelector: SpeedSelector
 
     private val handler = Handler(Looper.getMainLooper())
@@ -188,7 +188,9 @@ class AnalysisActivity : ComponentActivity() {
             sb.append("\n")
         }
         if (sb.isEmpty()) return
-        android.app.AlertDialog.Builder(this)
+        // Тёмная системная тема — без неё диалог открывался светлым поверх тёмного интерфейса
+        // приложения, что давало резкий разрыв темы в момент чтения советов по технике.
+        android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
             .setMessage(sb.toString().trimEnd())
             .setPositiveButton("OK", null)
             .show()
@@ -430,10 +432,18 @@ class AnalysisActivity : ComponentActivity() {
             setTextColor(Color.CYAN); textSize = 12f; gravity = Gravity.END
             setPadding(0, 0, (8 * dp).toInt(), 0)
         }
-        saveToGalleryBtn = Button(this).apply {
-            text = "💾"; textSize = 15f
-            setTextColor(Color.WHITE)
+        saveToGalleryBtn = ImageButton(this).apply {
+            // Векторная иконка вместо текстового символа-стрелки — метафора "сохранить
+            // на диск" (была дискета 💾) считывается не всеми, особенно младшей
+            // аудиторией, которая физически не застала дискеты, а стрелка вниз читается
+            // как "сохранить/экспортировать" интуитивнее. Именно векторная иконка, а не
+            // Unicode-глиф: на живом устройстве (Galaxy S25 Ultra) системный шрифт этой
+            // кнопки не рисовал ни эмодзи-стрелку (⬇, U+2B07), ни обычную стрелку
+            // (↓, U+2193) — обе показывались как "тофу"-полоска.
+            setImageResource(R.drawable.ic_download)
+            contentDescription = getString(R.string.export_save_button)
             setBackgroundColor(Color.TRANSPARENT)
+            setPadding((8 * dp).toInt(), (4 * dp).toInt(), (8 * dp).toInt(), (4 * dp).toInt())
             layoutParams = LinearLayout.LayoutParams((40 * dp).toInt(), (32 * dp).toInt())
         }
         topRow.addView(scoreText); topRow.addView(phaseLabel); topRow.addView(saveToGalleryBtn)
