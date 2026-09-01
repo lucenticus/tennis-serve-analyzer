@@ -95,7 +95,7 @@ class PlaybackOverlay @JvmOverloads constructor(
         invalidate()
     }
 
-    /** Вызывается из PlaybackActivity при каждом тике плеера */
+    /** Вызывается из AnalysisActivity при каждом тике плеера */
     fun seekToPose(videoPositionMs: Long) {
         // Режим 1: ServeRecording timeline
         recording?.let { rec ->

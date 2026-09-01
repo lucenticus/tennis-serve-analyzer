@@ -27,11 +27,6 @@
         <uses-native-library android:name="libcdsprpc.so" android:required="false" />
 
         <activity
-            android:name=".ui.PlaybackActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-
-        <activity
             android:name=".ui.AnalysisActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
