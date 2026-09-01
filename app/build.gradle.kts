@@ -68,13 +68,19 @@ android {
         jniLibs.pickFirsts += "**/libOpenCL.so"
         // Распаковывать .so на диск — обход проверки выравнивания ELF на Android 15
         jniLibs.useLegacyPackaging = true
-        // Выкидываем старые/ненужные QNN-бэкенды (экономия ~30 МБ). Оставляем HTP
-        // V73/V75/V79/V81 (Snapdragon 8 Gen1/Gen2/Gen3/8 Elite). Старые устройства → CPU.
+        // Выкидываем старые/ненужные QNN-бэкенды (экономия места в APK). Оставляем HTP
+        // V73/V75/V79/V81 (Snapdragon 8 Gen1/Gen2/Gen3/8 Elite) — самые массовые
+        // современные чипы. V68/V69 (Snapdragon 888/870/780G и т.п.) выброшены
+        // сознательно: это расширило бы охват NPU, но требует отдельного тестирования.
+        // libQnnDsp.so + libQnnDspV66Skel/Stub.so НЕ выбрасываем — это отдельный,
+        // более старый QNN-бэкенд для Hexagon v66 (Snapdragon 855/865/860), который
+        // "Htp"-бэкенд не поддерживает в принципе (см. комментарий у
+        // OrtManager.createSession); используется как промежуточная ступень
+        // Htp → Dsp → CPU.
         jniLibs.excludes += setOf(
             "**/libQnnHtpV68Skel.so", "**/libQnnHtpV68Stub.so",
             "**/libQnnHtpV69Skel.so", "**/libQnnHtpV69Stub.so",
-            "**/libQnnDspV66Skel.so", "**/libQnnDspV66Stub.so",
-            "**/libQnnDsp.so", "**/libQnnGpu.so"
+            "**/libQnnGpu.so"
         )
     }
 }
