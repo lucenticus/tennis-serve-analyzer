@@ -35,14 +35,24 @@ class ServeRecorder(private val context: Context) {
     fun buildUseCase(isFrontCamera: Boolean = false): VideoCapture<Recorder> {
         val targetFps = if (isFrontCamera) 60 else 120
 
-        val recorder = Recorder.Builder()
-            .setQualitySelector(
-                QualitySelector.from(
-                    Quality.FHD,
-                    FallbackStrategy.lowerQualityOrHigherThan(Quality.HD)
+        // На некоторых устройствах (виртуальные камеры эмуляторов, отдельные бюджетные
+        // чипы со слабой реализацией Camera2 HAL) QualitySelector.from() бросает
+        // IllegalArgumentException "Unable to find supported quality", если камера вообще
+        // не сообщает ни одного профиля качества — краш при старте камеры. Отлавливаем и
+        // откатываемся на Recorder без явного селектора (CameraX сам выберет доступное).
+        val recorder = try {
+            Recorder.Builder()
+                .setQualitySelector(
+                    QualitySelector.from(
+                        Quality.FHD,
+                        FallbackStrategy.lowerQualityOrHigherThan(Quality.HD)
+                    )
                 )
-            )
-            .build()
+                .build()
+        } catch (e: IllegalArgumentException) {
+            Log.w(TAG, "QualitySelector(FHD) unsupported, falling back to default: ${e.message}")
+            Recorder.Builder().build()
+        }
 
         val builder = VideoCapture.Builder(recorder)
         Camera2Interop.Extender(builder)
