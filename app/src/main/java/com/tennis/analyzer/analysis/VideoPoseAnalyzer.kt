@@ -50,6 +50,8 @@ class VideoPoseAnalyzer(private val context: Context) {
     ): VideoAnalysisResult {
         val coarseFrames = mutableListOf<PoseFrame>()
         var lastLandmarks: List<PoseLandmark>? = null
+        // Когда была последняя РЕАЛЬНАЯ (не перенесённая) детекция — см. MAX_CARRY_MS.
+        var lastRealMs: Long? = null
 
         val meta: VideoFrameExtractor.VideoMeta = VideoFrameExtractor.extract(videoFile, stepMs = 100L,
             onProgress = { d, t -> onProgress(d, t * 2) }
@@ -63,14 +65,24 @@ class VideoPoseAnalyzer(private val context: Context) {
                 val objectsFuture: Future<List<DetectedObject>> = parallelExec.submit(
                     Callable { objectDetector.detectPreScaled(scaled, timestampMs) }
                 )
-                val poseResult = runYoloPose(scaled, timestampMs, lastLandmarks)
+                // Не тащим landmarks дольше MAX_CARRY_MS без свежей детекции — без этого
+                // единичный случайный ложный всплеск (например фон, похожий на человека)
+                // переносился бы на ВСЕ последующие кадры до конца видео — "замороженный"
+                // человек там, где его на самом деле нет. Короткая просадка/смаз реальной
+                // подачи всё ещё бесшовно мостится (в пределах MAX_CARRY_MS).
+                val withinCarryBudget = lastRealMs != null && timestampMs - lastRealMs!! < MAX_CARRY_MS
+                val carryLandmarks = if (withinCarryBudget) lastLandmarks else null
+                val poseResult = runYoloPose(scaled, timestampMs, carryLandmarks)
                 val objects = objectsFuture.get()
 
                 if (scaled !== bitmap) scaled.recycle()
 
                 poseResult?.let { (lms, isNew) ->
                     coarseFrames.add(PoseFrame(lms, timestampMs, objects))
-                    if (isNew) lastLandmarks = lms
+                    if (isNew) {
+                        lastLandmarks = lms
+                        lastRealMs = timestampMs
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Frame error at ${timestampMs}ms: ${e.message}")
@@ -80,10 +92,29 @@ class VideoPoseAnalyzer(private val context: Context) {
         val contacts = findAllServeContacts(coarseFrames)
         Log.i(TAG, "Pass1: ${coarseFrames.size} frames, found ${contacts.size} serve(s): $contacts")
 
-        val effContacts = (if (contacts.isEmpty()) listOf(findApproxContact(coarseFrames)) else contacts)
-            .sorted()
+        // Человек в кадре есть (иначе coarseFrames был бы пуст), но findAllServeContacts не
+        // нашёл ни одного явного взмаха — пробуем найти хотя бы приблизительный контакт по
+        // кинематике (трофей→бэкскрэтч→пик скорости) или по сближению мяча с ракеткой (YOLO).
+        // Если и это ничего не даёт — реальных доказательств подачи нет вообще, не подставляем
+        // фиктивный "контакт" (раньше здесь всегда возвращался хоть какой-то timestamp вплоть
+        // до последнего кадра клипа, даже если человек просто стоял или ходил в кадре).
+        val rawContacts = if (contacts.isNotEmpty()) contacts else listOfNotNull(findApproxContact(coarseFrames))
+
+        // Санити-чек: подача физически невозможна без ракетки. Скорость запястья по позе —
+        // ненадёжный сигнал сам по себе: человек, который просто разговаривает и жестикулирует
+        // (например пассажир в машине), тоже может дать резкий взмах руки/головы, кинематически
+        // похожий на трофей/бэкскрэтч — YOLO ни разу не увидит ракетку рядом. Отбрасываем
+        // кандидатов, для которых ракетка не найдена НИ НА ОДНОМ грубом кадре в окне ±800мс.
+        val effContacts = rawContacts.filter { c -> hasRacketNearby(coarseFrames, c) }.sorted()
+        if (rawContacts.isNotEmpty() && effContacts.isEmpty()) {
+            Log.i(TAG, "Discarded ${rawContacts.size} contact(s) at $rawContacts — no racket detected nearby")
+        }
         return finishWithFinePasses(videoFile, meta, coarseFrames, effContacts, onProgress)
     }
+
+    /** Ракетка (YOLO classId 38) обнаружена хотя бы на одном грубом кадре рядом с [contactMs]. */
+    private fun hasRacketNearby(frames: List<PoseFrame>, contactMs: Long, windowMs: Long = 800L): Boolean =
+        frames.any { f -> kotlin.math.abs(f.timestampMs - contactMs) <= windowMs && f.objects.any { it.classId == 38 } }
 
     /** Точный файн-пасс вокруг КАЖДОЙ подачи; кадры всех окон сливаются в один таймлайн. */
     private fun finishWithFinePasses(
@@ -152,6 +183,7 @@ class VideoPoseAnalyzer(private val context: Context) {
     ) {
         if (endMs <= startMs) return
         var lastLandmarks: List<PoseLandmark>? = null
+        var lastRealMs: Long? = null
         VideoFrameExtractor.extract(videoFile, stepMs = stepMs, startMs = startMs, endMs = endMs,
             onProgress = { _, _ -> }
         ) { bitmap, timestampMs ->
@@ -160,7 +192,12 @@ class VideoPoseAnalyzer(private val context: Context) {
                              else Bitmap.createScaledBitmap(bitmap, 640, 640, true)
 
                 val lms = poseDetector.detectPreScaled(scaled)
-                val effLms = if (lms.isNotEmpty()) lms else lastLandmarks
+                // Тот же лимит переноса, что и в грубом проходе (см. MAX_CARRY_MS) — иначе
+                // единственная детекция (реальная или ложная) в начале региона "размазалась"
+                // бы на весь плотный fine-pass (может быть больше секунды при шаге 15-40мс).
+                val withinCarryBudget = lastRealMs != null && timestampMs - lastRealMs!! < MAX_CARRY_MS
+                val carryLandmarks = if (withinCarryBudget) lastLandmarks else null
+                val effLms = if (lms.isNotEmpty()) lms else carryLandmarks
                 val wristHint = effLms?.getOrNull(if (isLeftHanded) 15 else 16)?.let { it.x to it.y }
 
                 val objects = if (kotlin.math.abs(timestampMs - contactMs) <= CONTACT_MS)
@@ -171,9 +208,11 @@ class VideoPoseAnalyzer(private val context: Context) {
                 if (scaled !== bitmap) scaled.recycle()
 
                 if (lms.isNotEmpty()) {
-                    out.add(PoseFrame(lms, timestampMs, objects)); lastLandmarks = lms
-                } else {
-                    lastLandmarks?.let { out.add(PoseFrame(it, timestampMs, objects)) }
+                    out.add(PoseFrame(lms, timestampMs, objects))
+                    lastLandmarks = lms
+                    lastRealMs = timestampMs
+                } else if (carryLandmarks != null) {
+                    out.add(PoseFrame(carryLandmarks, timestampMs, objects))
                 }
                 onTick()
             } catch (e: Exception) {
@@ -247,8 +286,14 @@ class VideoPoseAnalyzer(private val context: Context) {
         return filtered
     }
 
-    private fun findApproxContact(frames: List<PoseFrame>): Long {
-        if (frames.isEmpty()) return 0L
+    /**
+     * Приблизительный момент контакта, когда findAllServeContacts не нашёл явного взмаха.
+     * Возвращает null, если нет ВООБЩЕ никаких признаков подачи — ни кинематики
+     * (трофей/бэкскрэтч/пик скорости запястья), ни сближения мяча с ракеткой по YOLO.
+     * Человек в кадре мог просто стоять, идти или разминаться — это не подача.
+     */
+    private fun findApproxContact(frames: List<PoseFrame>): Long? {
+        if (frames.isEmpty()) return null
 
         // Пары (запястье, локоть, плечо): левая=15/13/11, правая=16/14/12
         data class ArmIndices(val wrist: Int, val elbow: Int, val shoulder: Int)
@@ -321,7 +366,10 @@ class VideoPoseAnalyzer(private val context: Context) {
             Log.i(TAG, "trophy@${tMs}ms backscratch@${bMs}ms contact@${kinematicMs}ms vel=${"%.3f".format(maxVel)}")
         }
 
-        // Если YOLO нашёл мяч+ракетку в окне ±200мс от кинематики — уточняем до YOLO
+        // Если YOLO нашёл мяч+ракетку в окне ±200мс от кинематики — уточняем до YOLO.
+        // База для поиска окна — кинематический момент, а если его тоже нет, крайний кадр
+        // (просто чтобы было от чего отсчитывать окно поиска; сама по себе она НЕ считается
+        // доказательством подачи и никогда не возвращается напрямую).
         val base = kinematicMs ?: frames.last().timestampMs
         val yoloFrames = frames.filter { f ->
             kotlin.math.abs(f.timestampMs - base) <= 200L &&
@@ -338,7 +386,10 @@ class VideoPoseAnalyzer(private val context: Context) {
             return best.timestampMs
         }
 
-        return base
+        // Ни кинематика (трофей/бэкскрэтч/скорость), ни YOLO-сближение мяча с ракеткой
+        // ничего не подтвердили — реальных признаков подачи нет, честно возвращаем null
+        // вместо того чтобы подставлять kinematicMs=null→last-frame как будто это контакт.
+        return kinematicMs
     }
 
     private fun scaleBitmap(bitmap: Bitmap, maxDim: Int = 640): Bitmap {
@@ -360,5 +411,10 @@ class VideoPoseAnalyzer(private val context: Context) {
         private const val SERVE_GAP_MS  = 3000L   // мин. пауза между подачами
         private const val LEAD_MS       = 1300L   // насколько назад от контакта тянем файн-пасс (подброс/трофей)
         private const val CONTACT_MS    = 350L    // радиус вокруг контакта с ROI-zoom и шагом 15мс
+        // Общий лимит переноса landmarks для обоих проходов (грубого и файн-пасса) —
+        // в мс, а не в кадрах, т.к. шаг сильно разный (100мс vs 15-40мс). 500мс достаточно,
+        // чтобы промостить смаз/кратковременную заслонку при настоящей подаче, но не даёт
+        // единичному ложному срабатыванию "заморозиться" на весь клип/весь fine-pass регион.
+        private const val MAX_CARRY_MS = 500L
     }
 }

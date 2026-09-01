@@ -510,6 +510,19 @@ class MainActivity : ComponentActivity() {
             return
         }
 
+        // Человек в кадре есть, но ни явного взмаха (findAllServeContacts), ни кинематики
+        // трофей/бэкскрэтч/скорость, ни сближения мяча с ракеткой по YOLO не нашлось —
+        // реальной подачи в видео не было (стоял, шёл, разминался и т.п.). Раньше в этом
+        // случае VideoPoseAnalyzer всё равно подставлял фиктивный "контакт" и здесь строился
+        // полноценный (но бутафорский) результат.
+        if (result.serveContacts.isEmpty()) {
+            Log.w("MainActivity", "Person detected but no serve motion found — skipping analysis screen")
+            Toast.makeText(this, getString(R.string.no_serve_detected), Toast.LENGTH_LONG).show()
+            com.tennis.analyzer.wear.WearLink.sendResult(this, -1, null)
+            videoFile.delete()
+            return
+        }
+
         // Фазы каждой подачи отдельно + IDLE-разрывы между ними
         val phases = detectAllServePhases(result.frames, result.serveContacts)
 
