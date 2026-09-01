@@ -27,7 +27,7 @@ fun BannerAd(modifier: Modifier = Modifier) {
                     override fun onAdClicked() {}
                     override fun onImpression(impressionData: ImpressionData?) {}
                 })
-                loadAd(AdRequest.Builder(AdManager.BANNER_TEST).build())
+                loadAd(AdRequest.Builder(AdManager.BANNER_UNIT_ID).build())
             }
         }
     )

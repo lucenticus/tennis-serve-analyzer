@@ -26,14 +26,12 @@ import com.yandex.mobile.ads.interstitial.InterstitialAdLoader
  * документация Yandex местами описывает устаревший API (напр. несуществующий
  * MobileAds.initialize / AdRequestConfiguration).
  *
- * ⚠️ ID ниже — ТЕСТОВЫЕ (demo-блоки Yandex). Замени на свои из кабинета
- * рекламной сети Яндекса перед публикацией: https://ads.yandex.ru/
+ * ID ниже — реальные ad unit из кабинета рекламной сети Яндекса (ads.yandex.ru).
  */
 object AdManager {
 
-    // TODO: заменить на реальные ad unit ID из своего кабинета Yandex Ads
-    private const val INTERSTITIAL_TEST = "demo-interstitial-yandex"
-    const val BANNER_TEST = "demo-banner-yandex"
+    private const val INTERSTITIAL_UNIT_ID = "R-M-19853025-2"
+    const val BANNER_UNIT_ID = "R-M-19853025-1"
 
     private const val MIN_GAP_MS = 90_000L   // не чаще раза в 1.5 минуты
 
@@ -56,7 +54,7 @@ object AdManager {
     private fun loadInterstitial(context: Context) {
         if (loading || interstitial != null) return
         loading = true
-        val request = AdRequest.Builder(INTERSTITIAL_TEST).build()
+        val request = AdRequest.Builder(INTERSTITIAL_UNIT_ID).build()
         InterstitialAdLoader(context).loadAd(request, object : InterstitialAdLoadListener {
             override fun onAdLoaded(ad: InterstitialAd) {
                 interstitial = ad
