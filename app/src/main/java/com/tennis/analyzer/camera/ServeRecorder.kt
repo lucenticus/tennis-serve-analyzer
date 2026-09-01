@@ -4,7 +4,9 @@ import android.content.Context
 import android.hardware.camera2.CaptureRequest
 import android.util.Log
 import android.util.Range
+import androidx.annotation.OptIn
 import androidx.camera.camera2.interop.Camera2Interop
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.video.*
 import androidx.core.content.ContextCompat
 import java.io.File
@@ -29,6 +31,7 @@ class ServeRecorder(private val context: Context) {
      * Задняя камера: 1080p@120fps.
      * Фронтальная камера: 1080p@60fps (максимум для фронталки S25 Ultra).
      */
+    @OptIn(ExperimentalCamera2Interop::class)
     fun buildUseCase(isFrontCamera: Boolean = false): VideoCapture<Recorder> {
         val targetFps = if (isFrontCamera) 60 else 120
 

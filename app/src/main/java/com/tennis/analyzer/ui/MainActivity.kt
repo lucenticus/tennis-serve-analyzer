@@ -289,7 +289,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 )
                                 Text(
-                                    text = "${stringResource(R.string.auto_record_label)}: ${stringResource(if (autoRecord) R.string.state_on else R.string.state_off)}",
+                                    text = "${stringResource(R.string.auto_record_label)}: ${stringResource(if (autoRecord) R.string.toggle_state_on else R.string.toggle_state_off)}",
                                     color = Color.White, fontSize = 14.sp
                                 )
                             }

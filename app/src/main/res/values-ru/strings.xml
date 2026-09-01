@@ -13,12 +13,11 @@
     <string name="recording">● Запись…</string>
     <string name="auto_recording">● Авто-запись…</string>
     <string name="auto_record_label">Авто-запись</string>
-    <string name="state_on">вкл</string>
-    <string name="state_off">выкл</string>
+    <string name="toggle_state_on">вкл</string>
+    <string name="toggle_state_off">выкл</string>
     <string name="session_stats">Подач: %1$d   Средняя: %2$d   Последняя: %3$d</string>
     <string name="realtime_stats">Подач: %1$d</string>
     <string name="realtime_stats_last">Подач: %1$d   Последняя: %2$d</string>
-    <string name="realtime_hint">Выполняй подачу — слушай подсказки</string>
 
     <!-- Framing hints -->
     <string name="frame_ok">✓ Кадр в порядке</string>
@@ -77,13 +76,10 @@
     <string name="phase_acceleration">Разгон</string>
     <string name="phase_contact">Контакт</string>
     <string name="phase_follow">Завершение</string>
-    <string name="phase_contact_excl">Удар!</string>
 
     <!-- Analysis screen -->
     <string name="analysis_score">Оценка: %1$d / 100</string>
-    <string name="analysis_serve_header">Подача %1$d  —  %2$d/100</string>
     <string name="analysis_multi_summary">Подач: %1$d   ·   средняя %2$d / 100</string>
-    <string name="analysis_save_gallery">Сохранить в галерею</string>
     <string name="arm_above">Рука: +%1$d%% выше плеча</string>
     <string name="arm_below">Рука: %1$d%% ниже плеча</string>
     <string name="export_rendering">Рендеринг видео с наложением позы…</string>
@@ -107,7 +103,6 @@
     <string name="hint_contact_b">Рука полностью выпрямлена вверх, кисть пронирует — бейте в высшей точке</string>
     <string name="hint_follow_t">Завершение</string>
     <string name="hint_follow_b">Ракетка продолжает движение вниз и влево, вес переносится на переднюю ногу</string>
-    <string name="score_unit">балл</string>
     <string name="advice_card_title">💡 Советы</string>
     <string name="voice_score">Оценка подачи: %1$d из ста</string>
     <string name="voice_training_mode">Режим тренировки. Выполняй подачу.</string>
@@ -165,7 +160,6 @@
 
     <!-- Misc -->
     <string name="stop_and_analyze">⏹  Стоп и анализ</string>
-    <string name="playback_replay">⟳  Повтор</string>
 
     <!-- Live frame advice (FrameAdvisor) -->
     <string name="fa_elbow_more">Разогните локоть сильнее — сейчас %1$d°, нужно 160-175°</string>

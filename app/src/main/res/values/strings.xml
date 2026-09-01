@@ -13,12 +13,11 @@
     <string name="recording">● Recording…</string>
     <string name="auto_recording">● Auto-recording…</string>
     <string name="auto_record_label">Auto-record</string>
-    <string name="state_on">on</string>
-    <string name="state_off">off</string>
+    <string name="toggle_state_on">on</string>
+    <string name="toggle_state_off">off</string>
     <string name="session_stats">Serves: %1$d   Avg: %2$d   Last: %3$d</string>
     <string name="realtime_stats">Serves: %1$d</string>
     <string name="realtime_stats_last">Serves: %1$d   Last: %2$d</string>
-    <string name="realtime_hint">Perform a serve — listen to the tips</string>
 
     <!-- Framing hints -->
     <string name="frame_ok">✓ Framing looks good</string>
@@ -77,13 +76,10 @@
     <string name="phase_acceleration">Acceleration</string>
     <string name="phase_contact">Contact</string>
     <string name="phase_follow">Follow-through</string>
-    <string name="phase_contact_excl">Contact!</string>
 
     <!-- Analysis screen -->
     <string name="analysis_score">Score: %1$d / 100</string>
-    <string name="analysis_serve_header">Serve %1$d  —  %2$d/100</string>
     <string name="analysis_multi_summary">Serves: %1$d   ·   avg %2$d / 100</string>
-    <string name="analysis_save_gallery">Save to gallery</string>
     <string name="arm_above">Arm: +%1$d%% above shoulder</string>
     <string name="arm_below">Arm: %1$d%% below shoulder</string>
     <string name="export_rendering">Rendering video with pose overlay…</string>
@@ -107,7 +103,6 @@
     <string name="hint_contact_b">Arm fully extended up, wrist pronates — hit at the highest point</string>
     <string name="hint_follow_t">Follow-through</string>
     <string name="hint_follow_b">The racket continues down and left, weight shifts to the front foot</string>
-    <string name="score_unit">pts</string>
     <string name="advice_card_title">💡 Tips</string>
     <string name="voice_score">Serve score: %1$d out of a hundred</string>
     <string name="voice_training_mode">Training mode. Perform a serve.</string>
@@ -165,7 +160,6 @@
 
     <!-- Misc -->
     <string name="stop_and_analyze">⏹  Stop &amp; analyze</string>
-    <string name="playback_replay">⟳  Replay</string>
 
     <!-- Live frame advice (FrameAdvisor) -->
     <string name="fa_elbow_more">Extend the elbow more — now %1$d°, need 160-175°</string>
