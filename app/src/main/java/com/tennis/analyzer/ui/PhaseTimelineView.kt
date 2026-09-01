@@ -23,12 +23,11 @@ class PhaseTimelineView(context: Context) : View(context) {
     private var playheadMs: Long = 0L
 
     private val bgPaint = Paint().apply { style = Paint.Style.FILL }
-    private val phaseLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE; textSize = 18f; textAlign = Paint.Align.CENTER
-        isFakeBoldText = true
-    }
+    // Более тонкие и тусклые разделители фаз внутри одной подачи: с несколькими подачами
+    // на баре их набирается по 6-7 на каждую, и на полной яркости (180) они спорили за
+    // внимание с самими цветными сегментами. Границы фаз остаются видны, но не кричат.
     private val tickPaint = Paint().apply {
-        color = Color.argb(180, 255, 255, 255); strokeWidth = 2f; style = Paint.Style.STROKE
+        color = Color.argb(90, 255, 255, 255); strokeWidth = 1.5f; style = Paint.Style.STROKE
     }
     private val playheadPaint = Paint().apply {
         color = Color.WHITE; strokeWidth = 3f; style = Paint.Style.STROKE
@@ -48,16 +47,11 @@ class PhaseTimelineView(context: Context) : View(context) {
         ServePhase.FOLLOW_THROUGH to Color.argb(200, 156, 39,  176)
     )
 
-    private val phaseShortNames = mapOf(
-        ServePhase.IDLE           to context.getString(com.tennis.analyzer.R.string.phase_idle),
-        ServePhase.READY_STANCE   to context.getString(com.tennis.analyzer.R.string.phase_stance),
-        ServePhase.TOSS           to context.getString(com.tennis.analyzer.R.string.phase_toss),
-        ServePhase.TROPHY         to context.getString(com.tennis.analyzer.R.string.phase_trophy),
-        ServePhase.BACKSCRATCH    to context.getString(com.tennis.analyzer.R.string.phase_backscratch),
-        ServePhase.ACCELERATION   to context.getString(com.tennis.analyzer.R.string.phase_acceleration),
-        ServePhase.CONTACT        to context.getString(com.tennis.analyzer.R.string.phase_contact),
-        ServePhase.FOLLOW_THROUGH to context.getString(com.tennis.analyzer.R.string.phase_follow)
-    )
+    // Названия фаз внутри сегментов раньше рисовались текстом прямо на баре — при
+    // нескольких подачах на баре получалось до 6×7 узких сегментов, и подписи либо не
+    // влезали (мигали то есть, то нет), либо перекрывались. Название текущей фазы и так
+    // видно рядом со счётом ("● Стойка"), а полный разбор — в диалоге по тапу на совет,
+    // так что здесь достаточно только цвета сегмента, без текста.
 
     fun setData(
         frames: List<PoseFrame>,
@@ -72,8 +66,11 @@ class PhaseTimelineView(context: Context) : View(context) {
         invalidate()
     }
 
+    // Номер подачи ("1", "2"…) вместо полного "Подача 1" — тот же смысл читается из
+    // контекста (счётчик "Подач: N" уже виден в шапке), а короткая цифра почти никогда
+    // не перекрывается с соседями, даже когда подач много и они стоят близко друг к другу.
     private val serveLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE; textSize = 22f; textAlign = Paint.Align.CENTER
+        color = Color.WHITE; textSize = 18f; textAlign = Paint.Align.CENTER
         isFakeBoldText = true
     }
 
@@ -88,22 +85,19 @@ class PhaseTimelineView(context: Context) : View(context) {
         val h = height.toFloat()
         val barTop = h * 0.45f
         val barBot = h * 0.88f
-        val barMid = (barTop + barBot) / 2f
 
         // Фоновая полоса
         val bgRect = RectF(0f, barTop, w, barBot)
         bgPaint.color = Color.argb(120, 30, 30, 30)
         canvas.drawRoundRect(bgRect, 6f, 6f, bgPaint)
 
-        // Сегменты фаз + подписи внутри
+        // Сегменты фаз — только цвет, без текста внутри (см. комментарий у поля выше)
         if (detectedPhases.isNotEmpty()) {
             for (i in detectedPhases.indices) {
                 val segStart = msToX(detectedPhases[i].timeMs, w)
                 val segEnd = if (i + 1 < detectedPhases.size)
                     msToX(detectedPhases[i + 1].timeMs, w) else w
-                val segW = segEnd - segStart
 
-                // Заливка сегмента
                 bgPaint.color = phaseColors[detectedPhases[i].phase] ?: Color.GRAY
                 canvas.drawRect(segStart, barTop, segEnd, barBot, bgPaint)
 
@@ -111,38 +105,29 @@ class PhaseTimelineView(context: Context) : View(context) {
                 if (i > 0) {
                     canvas.drawLine(segStart, barTop, segStart, barBot, tickPaint)
                 }
-
-                // Подпись фазы внутри сегмента (если достаточно места)
-                val label = phaseShortNames[detectedPhases[i].phase] ?: ""
-                val labelW = phaseLabelPaint.measureText(label)
-                if (segW > labelW + 8f) {
-                    val cx = segStart + segW / 2f
-                    // Тень под текст
-                    shadowPaint.style = Paint.Style.FILL
-                    canvas.drawRoundRect(
-                        cx - labelW / 2f - 4f, barMid - phaseLabelPaint.textSize,
-                        cx + labelW / 2f + 4f, barMid + 6f,
-                        4f, 4f, shadowPaint
-                    )
-                    canvas.drawText(label, cx, barMid, phaseLabelPaint)
-                }
             }
         }
 
-        // Номера подач над полосой (если их несколько)
+        // Номера подач над полосой (если их несколько) — просто "1", "2"…, и только там,
+        // где для метки реально есть место, иначе на коротких подачах подряд цифры
+        // налезали бы друг на друга.
         if (serveContacts.size > 1) {
+            val minGap = serveLabelPaint.textSize * 1.6f
+            var lastLabelX = Float.NEGATIVE_INFINITY
             for ((i, c) in serveContacts.withIndex()) {
                 val x = msToX(c, w)
-                val label = context.getString(com.tennis.analyzer.R.string.compare_serve_n, i + 1)
+                // Вертикальный штрих к контакту рисуем всегда — это просто отметка на баре
+                canvas.drawLine(x, barTop, x, barBot, playheadPaint)
+                if (x - lastLabelX < minGap) continue
+                lastLabelX = x
+                val label = (i + 1).toString()
                 val lw = serveLabelPaint.measureText(label)
                 shadowPaint.style = Paint.Style.FILL
                 canvas.drawRoundRect(
-                    x - lw / 2f - 6f, barTop - serveLabelPaint.textSize - 10f,
+                    x - lw / 2f - 6f, barTop - serveLabelPaint.textSize - 8f,
                     x + lw / 2f + 6f, barTop - 4f, 5f, 5f, shadowPaint
                 )
                 canvas.drawText(label, x, barTop - 10f, serveLabelPaint)
-                // Вертикальный штрих к контакту
-                canvas.drawLine(x, barTop, x, barBot, playheadPaint)
             }
         }
 

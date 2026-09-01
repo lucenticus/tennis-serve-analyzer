@@ -95,6 +95,8 @@
     <string name="arm_above">Arm: +%1$d%% above shoulder</string>
     <string name="arm_below">Arm: %1$d%% below shoulder</string>
     <string name="export_save_button">Save video with pose overlay to gallery</string>
+    <string name="focus_title">FOCUS ON THIS</string>
+    <string name="focus_frequency">%1$d of %2$d serves</string>
     <string name="export_rendering">Rendering video with pose overlay…</string>
     <string name="export_error">Export error</string>
     <string name="export_saved">Video with pose saved to gallery</string>

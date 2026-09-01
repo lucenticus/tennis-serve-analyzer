@@ -95,6 +95,8 @@
     <string name="arm_above">Рука: +%1$d%% выше плеча</string>
     <string name="arm_below">Рука: %1$d%% ниже плеча</string>
     <string name="export_save_button">Сохранить видео с наложением позы в галерею</string>
+    <string name="focus_title">ГЛАВНОЕ, НАД ЧЕМ РАБОТАТЬ</string>
+    <string name="focus_frequency">%1$d из %2$d подач</string>
     <string name="export_rendering">Рендеринг видео с наложением позы…</string>
     <string name="export_error">Ошибка экспорта</string>
     <string name="export_saved">Видео с позой сохранено в галерею</string>
