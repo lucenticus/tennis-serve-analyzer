@@ -15,6 +15,7 @@ import com.yandex.mobile.ads.common.ImpressionData
 /** Баннерная реклама Yandex Ads (тестовый ad-unit; заменить перед публикацией). */
 @Composable
 fun BannerAd(modifier: Modifier = Modifier) {
+    if (!AdManager.ADS_ENABLED) return
     val screenWidthDp = LocalConfiguration.current.screenWidthDp
     AndroidView(
         modifier = modifier.fillMaxWidth(),

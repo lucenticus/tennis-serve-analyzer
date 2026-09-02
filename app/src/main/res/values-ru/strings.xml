@@ -37,7 +37,7 @@
     <string name="onb3_title">Как снимать</string>
     <string name="onb3_body">Поставь телефон боком к корту, лучше на штатив. Оставь место сверху — чтобы подброс мяча влез в кадр. Жми запись на экране или с часов.</string>
     <string name="onb4_title">Рука и часы</string>
-    <string name="onb4_body">Укажи рабочую руку кнопкой ✋ справа вверху. С Galaxy Watch можно запускать запись и видеть оценку с подсказкой прямо на руке.</string>
+    <string name="onb4_body">Укажи рабочую руку в настройках (⚙️ справа вверху). С Galaxy Watch можно запускать запись и видеть оценку с подсказкой прямо на руке.</string>
 
     <!-- Settings -->
     <string name="settings">Настройки</string>
@@ -52,12 +52,22 @@
     <string name="voice_off">Выключены</string>
     <string name="settings_clear_history">Очистить историю подач</string>
     <string name="settings_history_cleared">История очищена</string>
+    <string name="settings_clear_history_title">Очистить всю историю подач?</string>
+    <string name="settings_clear_history_body">Все записанные видео и оценки будут безвозвратно удалены. Отменить не получится.</string>
+    <string name="settings_privacy">Политика конфиденциальности</string>
     <string name="settings_source">Исходный код (AGPL-3.0)</string>
     <string name="settings_source_sub">Открыть на GitHub</string>
     <string name="settings_about">Tennis Serve Analyzer\nЛицензия: AGPL-3.0</string>
+    <string name="settings_version">Версия %1$s</string>
+
+    <!-- Shared confirm/cancel -->
+    <string name="action_delete">Удалить</string>
+    <string name="action_cancel">Отмена</string>
 
     <!-- History &amp; comparison -->
     <string name="history_title">История подач</string>
+    <string name="history_delete_title">Удалить эту подачу?</string>
+    <string name="history_delete_body">Видео и оценка будут безвозвратно удалены. Отменить не получится.</string>
     <string name="history_hint_select">Отметь две подачи для сравнения</string>
     <string name="history_selected">Выбрано: %1$d/2</string>
     <string name="history_empty">Пока нет записей.\nЗапиши и проанализируй подачу.</string>
@@ -84,6 +94,9 @@
     <string name="analysis_multi_summary">Подач: %1$d   ·   средняя %2$d / 100</string>
     <string name="arm_above">Рука: +%1$d%% выше плеча</string>
     <string name="arm_below">Рука: %1$d%% ниже плеча</string>
+    <string name="export_save_button">Сохранить видео с наложением позы в галерею</string>
+    <string name="focus_title">ГЛАВНОЕ, НАД ЧЕМ РАБОТАТЬ</string>
+    <string name="focus_frequency">%1$d из %2$d подач</string>
     <string name="export_rendering">Рендеринг видео с наложением позы…</string>
     <string name="export_error">Ошибка экспорта</string>
     <string name="export_saved">Видео с позой сохранено в галерею</string>

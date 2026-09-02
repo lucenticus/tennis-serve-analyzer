@@ -40,6 +40,10 @@ class HistoryActivity : ComponentActivity() {
         setContent {
             val entries by dao.all().collectAsState(initial = emptyList())
             val selected = remember { mutableStateListOf<Long>() }
+            // Запись, которую попросили удалить — сама операция ждёт подтверждения в диалоге,
+            // а не выполняется сразу по тапу на "✕" (см. UX-аудит: удаление было мгновенным
+            // и необратимым).
+            var pendingDelete by remember { mutableStateOf<ServeHistoryEntry?>(null) }
 
             Scaffold(
                 containerColor = Color(0xFF101010),
@@ -91,10 +95,34 @@ class HistoryActivity : ComponentActivity() {
                                     if (selected.contains(e.id)) selected.remove(e.id)
                                     else if (selected.size < 2) selected.add(e.id)
                                 },
-                                onDelete = { deleteEntry(e) }
+                                onDelete = { pendingDelete = e }
                             )
                         }
                     }
+                }
+
+                pendingDelete?.let { entry ->
+                    AlertDialog(
+                        onDismissRequest = { pendingDelete = null },
+                        title = { Text(stringResource(R.string.history_delete_title)) },
+                        text = { Text(stringResource(R.string.history_delete_body)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                deleteEntry(entry)
+                                pendingDelete = null
+                            }) {
+                                Text(stringResource(R.string.action_delete), color = Color(0xFFE53935))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { pendingDelete = null }) {
+                                Text(stringResource(R.string.action_cancel))
+                            }
+                        },
+                        containerColor = Color(0xFF1C1C1C),
+                        titleContentColor = Color.White,
+                        textContentColor = Color(0xFFBBBBBB)
+                    )
                 }
             }
         }

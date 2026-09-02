@@ -11,10 +11,18 @@ import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.sqrt
 
+/**
+ * Одно замечание по технике. [key] — стабильный идентификатор самого замечания
+ * (не зависит от конкретного угла/процента), нужен чтобы агрегировать одинаковые
+ * замечания с разных подач одного видео (иначе "прямой локоть 166°" и "прямой
+ * локоть 159°" считаются разными строками и не схлопываются в одну).
+ */
+data class Issue(val key: String, val text: String)
+
 data class PhaseReport(
     val phase: ServePhase,
     val goods: List<String>,
-    val issues: List<String>
+    val issues: List<Issue>
 )
 
 data class ServeReport(
@@ -73,7 +81,7 @@ object PhaseAnalyzer {
         val frame = bestFrame(frames, hl)
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
-        val issues = mutableListOf<String>()
+        val issues = mutableListOf<Issue>()
 
         val knee = lm.getOrNull(hl.racketKnee)
         val hip  = lm.getOrNull(hl.racketHip)
@@ -84,7 +92,7 @@ object PhaseAnalyzer {
         if (knee != null && hip != null) {
             val flex = knee.y - hip.y
             if (flex > 0.08f) goods += context.getString(R.string.rs_knees_good)
-            else issues += context.getString(R.string.rs_knees_bad)
+            else issues += Issue("rs_knees_bad", context.getString(R.string.rs_knees_bad))
         }
 
         // Плечи боком к сетке (разница Z между плечами)
@@ -93,7 +101,7 @@ object PhaseAnalyzer {
         if (lSh != null && rSh != null) {
             val sideTurn = abs(lSh.z - rSh.z)
             if (sideTurn > 0.08f) goods += context.getString(R.string.rs_side_good)
-            else issues += context.getString(R.string.rs_side_bad)
+            else issues += Issue("rs_side_bad", context.getString(R.string.rs_side_bad))
         }
 
         return PhaseReport(ServePhase.READY_STANCE, goods, issues)
@@ -108,7 +116,7 @@ object PhaseAnalyzer {
         } ?: frames.first()
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
-        val issues = mutableListOf<String>()
+        val issues = mutableListOf<Issue>()
 
         val tossWrist    = lm.getOrNull(hl.tossWrist)
         val tossShoulder = lm.getOrNull(hl.tossShoulder)
@@ -120,7 +128,7 @@ object PhaseAnalyzer {
             when {
                 aboveShoulder > 0.20f -> goods += context.getString(R.string.toss_high_good)
                 aboveShoulder > 0.05f -> goods += context.getString(R.string.toss_ok)
-                else -> issues += context.getString(R.string.toss_low)
+                else -> issues += Issue("toss_low", context.getString(R.string.toss_low))
             }
         }
 
@@ -130,7 +138,7 @@ object PhaseAnalyzer {
             when {
                 angle > 155f -> goods += context.getString(R.string.toss_arm_straight)
                 angle > 130f -> {} // приемлемо, не комментируем
-                else -> issues += context.getString(R.string.toss_arm_bent, angle.toInt())
+                else -> issues += Issue("toss_arm_bent", context.getString(R.string.toss_arm_bent, angle.toInt()))
             }
         }
 
@@ -149,7 +157,7 @@ object PhaseAnalyzer {
         } ?: frames.first()
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
-        val issues = mutableListOf<String>()
+        val issues = mutableListOf<Issue>()
 
         val racketShoulder = lm.getOrNull(hl.racketShoulder)
         val racketElbow    = lm.getOrNull(hl.racketElbow)
@@ -162,7 +170,7 @@ object PhaseAnalyzer {
             if (racketElbow.y < racketShoulder.y - 0.03f)
                 goods += context.getString(R.string.trophy_elbow_up)
             else
-                issues += context.getString(R.string.trophy_elbow_low)
+                issues += Issue("trophy_elbow_low", context.getString(R.string.trophy_elbow_low))
         }
 
         // Угол локтя рабочей руки в трофее (~90°)
@@ -170,8 +178,8 @@ object PhaseAnalyzer {
             val angle = angleBetween(racketShoulder, racketElbow, racketWrist)
             when {
                 angle in 75f..110f -> goods += context.getString(R.string.trophy_angle_good, angle.toInt())
-                angle < 75f -> issues += context.getString(R.string.trophy_angle_bent, angle.toInt())
-                else -> issues += context.getString(R.string.trophy_angle_straight, angle.toInt())
+                angle < 75f -> issues += Issue("trophy_angle_bent", context.getString(R.string.trophy_angle_bent, angle.toInt()))
+                else -> issues += Issue("trophy_angle_straight", context.getString(R.string.trophy_angle_straight, angle.toInt()))
             }
         }
 
@@ -180,7 +188,7 @@ object PhaseAnalyzer {
             if (tossElbow.y < tossShoulder.y)
                 goods += context.getString(R.string.trophy_both_up)
             else
-                issues += context.getString(R.string.trophy_toss_higher)
+                issues += Issue("trophy_toss_higher", context.getString(R.string.trophy_toss_higher))
         }
 
         // Поворот плеч
@@ -189,7 +197,7 @@ object PhaseAnalyzer {
         if (lSh != null && rSh != null) {
             val rotation = abs(lSh.z - rSh.z)
             if (rotation > 0.1f) goods += context.getString(R.string.trophy_rot_good)
-            else issues += context.getString(R.string.trophy_rot_bad)
+            else issues += Issue("trophy_rot_bad", context.getString(R.string.trophy_rot_bad))
         }
 
         return PhaseReport(ServePhase.TROPHY, goods, issues)
@@ -204,7 +212,7 @@ object PhaseAnalyzer {
         } ?: frames.first()
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
-        val issues = mutableListOf<String>()
+        val issues = mutableListOf<Issue>()
 
         val wrist    = lm.getOrNull(hl.racketWrist)
         val shoulder = lm.getOrNull(hl.racketShoulder)
@@ -216,7 +224,7 @@ object PhaseAnalyzer {
             when {
                 drop > 0.15f -> goods += context.getString(R.string.bs_deep)
                 drop > 0.05f -> goods += context.getString(R.string.bs_ok)
-                else -> issues += context.getString(R.string.bs_low)
+                else -> issues += Issue("bs_low", context.getString(R.string.bs_low))
             }
         }
 
@@ -225,7 +233,7 @@ object PhaseAnalyzer {
             val angle = angleBetween(shoulder, elbow, wrist)
             when {
                 angle in 80f..130f -> goods += context.getString(R.string.bs_elbow_good, angle.toInt())
-                angle > 150f -> issues += context.getString(R.string.bs_elbow_straight, angle.toInt())
+                angle > 150f -> issues += Issue("bs_elbow_straight", context.getString(R.string.bs_elbow_straight, angle.toInt()))
                 else -> {}
             }
         }
@@ -240,7 +248,7 @@ object PhaseAnalyzer {
         val frame = peakVelocityFrame(frames, hl) ?: bestFrame(frames, hl)
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
-        val issues = mutableListOf<String>()
+        val issues = mutableListOf<Issue>()
 
         val shoulder = lm.getOrNull(hl.racketShoulder)
         val elbow    = lm.getOrNull(hl.racketElbow)
@@ -254,15 +262,15 @@ object PhaseAnalyzer {
             val tilt = Math.toDegrees(Math.atan2(dx.toDouble(), dy.toDouble())).toFloat()
             when {
                 tilt in 8f..25f -> goods += context.getString(R.string.accel_tilt_good, tilt.toInt())
-                tilt < 5f -> issues += context.getString(R.string.accel_tilt_low)
-                tilt > 30f -> issues += context.getString(R.string.accel_tilt_high, tilt.toInt())
+                tilt < 5f -> issues += Issue("accel_tilt_low", context.getString(R.string.accel_tilt_low))
+                tilt > 30f -> issues += Issue("accel_tilt_high", context.getString(R.string.accel_tilt_high, tilt.toInt()))
             }
         }
 
         // Рука тянется вверх
         if (wrist != null && shoulder != null) {
             if (wrist.y < shoulder.y - 0.1f) goods += context.getString(R.string.accel_reach_good)
-            else issues += context.getString(R.string.accel_reach_bad)
+            else issues += Issue("accel_reach_bad", context.getString(R.string.accel_reach_bad))
         }
 
         return PhaseReport(ServePhase.ACCELERATION, goods, issues)
@@ -277,7 +285,7 @@ object PhaseAnalyzer {
         } ?: frames.first()
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
-        val issues = mutableListOf<String>()
+        val issues = mutableListOf<Issue>()
 
         val shoulder = lm.getOrNull(hl.racketShoulder)
         val elbow    = lm.getOrNull(hl.racketElbow)
@@ -291,8 +299,8 @@ object PhaseAnalyzer {
             when {
                 angle in 160f..180f -> goods += context.getString(R.string.contact_ext_great, angle.toInt())
                 angle in 145f..160f -> goods += context.getString(R.string.contact_ext_ok, angle.toInt())
-                angle in 130f..145f -> issues += context.getString(R.string.contact_ext_more, angle.toInt())
-                else -> issues += context.getString(R.string.contact_ext_bent, angle.toInt())
+                angle in 130f..145f -> issues += Issue("contact_ext_more", context.getString(R.string.contact_ext_more, angle.toInt()))
+                else -> issues += Issue("contact_ext_bent", context.getString(R.string.contact_ext_bent, angle.toInt()))
             }
         }
 
@@ -304,7 +312,7 @@ object PhaseAnalyzer {
                 when {
                     contactPct > 110 -> goods += context.getString(R.string.contact_h_veryhigh, contactPct)
                     contactPct > 90  -> goods += context.getString(R.string.contact_h_good, contactPct)
-                    else -> issues += context.getString(R.string.contact_h_low, contactPct)
+                    else -> issues += Issue("contact_h_low", context.getString(R.string.contact_h_low, contactPct))
                 }
             }
         }
@@ -326,7 +334,7 @@ object PhaseAnalyzer {
         val frame = frames.lastOrNull() ?: return PhaseReport(ServePhase.FOLLOW_THROUGH, emptyList(), emptyList())
         val lm = frame.landmarks
         val goods = mutableListOf<String>()
-        val issues = mutableListOf<String>()
+        val issues = mutableListOf<Issue>()
 
         val wrist    = lm.getOrNull(hl.racketWrist)
         val tossHip  = lm.getOrNull(hl.tossHip)
@@ -341,7 +349,7 @@ object PhaseAnalyzer {
                 wrist.x > tossHip.x - 0.05f   // левша: запястье ушло вправо
 
             if (crossedBody) goods += context.getString(R.string.ft_crossed)
-            else issues += context.getString(R.string.ft_short)
+            else issues += Issue("ft_short", context.getString(R.string.ft_short))
         }
 
         // Рука опустилась ниже плеча

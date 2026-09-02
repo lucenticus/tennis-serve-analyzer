@@ -4,7 +4,6 @@ import android.Manifest
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import kotlinx.coroutines.delay
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -89,6 +88,11 @@ class MainActivity : ComponentActivity() {
     private val realtimeServeCount = mutableStateOf(0)
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    // Сообщения "человек/подача не найдены" — Snackbar сверху экрана, а не Toast, чтобы не
+    // перекрывать кнопки "Записать подачу"/"Загрузить из галереи" внизу (Toast там садился
+    // прямо поверх них).
+    private val snackbarHostState = SnackbarHostState()
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -429,6 +433,13 @@ class MainActivity : ComponentActivity() {
                         prefs.edit().putBoolean("onboarding_done", true).apply()
                     })
                 }
+
+                // "Человек/подача не найдены" и подобные сообщения — сверху, подальше от
+                // кнопок управления записью внизу экрана.
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 90.dp)
+                )
             }
         }
     }
@@ -504,7 +515,7 @@ class MainActivity : ComponentActivity() {
         // с бутафорским "Стойка"/0 из 100 и не рисуем скелет — просто сообщаем и выходим.
         if (result.frames.isEmpty()) {
             Log.w("MainActivity", "No person detected in the whole video — skipping analysis screen")
-            Toast.makeText(this, getString(R.string.no_person_detected), Toast.LENGTH_LONG).show()
+            scope.launch { snackbarHostState.showSnackbar(getString(R.string.no_person_detected)) }
             com.tennis.analyzer.wear.WearLink.sendResult(this, -1, null)
             videoFile.delete()
             return
@@ -517,7 +528,7 @@ class MainActivity : ComponentActivity() {
         // полноценный (но бутафорский) результат.
         if (result.serveContacts.isEmpty()) {
             Log.w("MainActivity", "Person detected but no serve motion found — skipping analysis screen")
-            Toast.makeText(this, getString(R.string.no_serve_detected), Toast.LENGTH_LONG).show()
+            scope.launch { snackbarHostState.showSnackbar(getString(R.string.no_serve_detected)) }
             com.tennis.analyzer.wear.WearLink.sendResult(this, -1, null)
             videoFile.delete()
             return
