@@ -30,6 +30,11 @@ import com.yandex.mobile.ads.interstitial.InterstitialAdLoader
  */
 object AdManager {
 
+    // Реклама временно отключена целиком (по просьбе во время UX-правок — интерстишиал
+    // после каждого возврата с экрана анализа постоянно перебивал ручное тестирование
+    // интерфейса). Чтобы вернуть рекламу — просто верни true.
+    const val ADS_ENABLED = false
+
     private const val INTERSTITIAL_UNIT_ID = "R-M-19853025-2"
     const val BANNER_UNIT_ID = "R-M-19853025-1"
 
@@ -42,6 +47,7 @@ object AdManager {
 
     /** Вызвать один раз при старте: инициализировать SDK и подгрузить первую рекламу. */
     fun start(activity: Activity) {
+        if (!ADS_ENABLED) return
         if (initialized) { loadInterstitial(activity); return }
         initialized = true
         YandexAds.initialize(activity, object : InitializationListener {
@@ -70,6 +76,7 @@ object AdManager {
 
     /** Показать межстраничную, если реклама готова и прошёл интервал. Затем подгрузить следующую. */
     fun maybeShowInterstitial(activity: Activity) {
+        if (!ADS_ENABLED) return
         val ad = interstitial ?: run { loadInterstitial(activity); return }
         if (System.currentTimeMillis() - lastShownMs < MIN_GAP_MS) return
         ad.setAdEventListener(object : InterstitialAdEventListener {
