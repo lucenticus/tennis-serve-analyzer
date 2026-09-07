@@ -445,7 +445,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /** Копирует видео в постоянное хранилище и пишет запись в историю. */
-    private fun saveServeToHistory(srcVideo: java.io.File, score: Int, tip: String?, durationMs: Long) {
+    private fun saveServeToHistory(srcVideo: java.io.File, score: Int, tip: String?, durationMs: Long, contactMs: Long?) {
         scope.launch(Dispatchers.IO) {
             try {
                 val dir = java.io.File(filesDir, "serves").apply { mkdirs() }
@@ -458,7 +458,8 @@ class MainActivity : ComponentActivity() {
                         score = score,
                         tip = tip,
                         isLeftHanded = isLeftHanded,
-                        durationMs = durationMs
+                        durationMs = durationMs,
+                        contactMs = contactMs
                     )
                 )
                 Log.i("MainActivity", "Serve saved to history: ${dst.name}")
@@ -540,13 +541,16 @@ class MainActivity : ComponentActivity() {
         // Счёт сессии — добавляем оценку каждой подачи; запоминаем последнюю для часов
         var lastScore: Int? = null
         var lastTip: String? = null
-        for (window in serveWindows(result.frames, result.serveContacts)) {
+        var lastContactMs: Long? = null
+        val windows = serveWindows(result.frames, result.serveContacts)
+        for ((i, window) in windows.withIndex()) {
             val sub = result.frames.filter { it.timestampMs in window.first..window.second }
             if (sub.size < 3) continue
             val (metrics, advice) = ServeAnalyzer.analyze(applicationContext, sub, isLeftHanded)
             recentScores.add(metrics.overallScore)
             lastScore = metrics.overallScore.toInt()
             lastTip = advice.firstOrNull()?.textRu
+            lastContactMs = result.serveContacts.getOrNull(i)
         }
         while (recentScores.size > 15) recentScores.removeAt(0)
 
@@ -555,7 +559,7 @@ class MainActivity : ComponentActivity() {
         com.tennis.analyzer.wear.WearLink.sendResult(this, lastScore ?: -1, lastTip)
 
         // Сохраняем подачу в историю (видео + оценка), если распознана
-        lastScore?.let { sc -> saveServeToHistory(videoFile, sc, lastTip, result.videoDurationMs) }
+        lastScore?.let { sc -> saveServeToHistory(videoFile, sc, lastTip, result.videoDurationMs, lastContactMs) }
 
         // Показать межстраничную рекламу при возврате на главный экран
         showAdOnResume = true
@@ -933,7 +937,10 @@ private fun OnboardingOverlay(onDone: () -> Unit) {
     data class Slide(val emoji: String, val title: String, val body: String)
     val slides = listOf(
         Slide("🎾", stringResource(R.string.onb1_title), stringResource(R.string.onb1_body)),
-        Slide("🔀", stringResource(R.string.onb2_title), stringResource(R.string.onb2_body)),
+        // ⚖️ вместо 🔀: shuffle-иконка ассоциируется с перемешиванием плейлиста, а не
+        // с переключением между двумя режимами — считывалась неверно с первого взгляда
+        // (см. UX-аудит). Весы читаются как «выбор одного из двух».
+        Slide("⚖️", stringResource(R.string.onb2_title), stringResource(R.string.onb2_body)),
         Slide("📹", stringResource(R.string.onb3_title), stringResource(R.string.onb3_body)),
         Slide("⌚", stringResource(R.string.onb4_title), stringResource(R.string.onb4_body))
     )

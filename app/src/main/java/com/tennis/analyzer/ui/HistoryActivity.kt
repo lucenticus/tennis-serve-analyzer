@@ -129,10 +129,14 @@ class HistoryActivity : ComponentActivity() {
     }
 
     private fun openCompare(entries: List<ServeHistoryEntry>, selected: List<Long>) {
-        val paths = selected.mapNotNull { id -> entries.firstOrNull { it.id == id }?.videoPath }
-        if (paths.isEmpty()) return
+        val picked = selected.mapNotNull { id -> entries.firstOrNull { it.id == id } }
+        if (picked.isEmpty()) return
         startActivity(Intent(this, ComparisonActivity::class.java).apply {
-            putExtra(ComparisonActivity.EXTRA_PATHS, paths.toTypedArray())
+            putExtra(ComparisonActivity.EXTRA_PATHS, picked.map { it.videoPath }.toTypedArray())
+            // Момент удара по мячу для каждого видео (−1, если неизвестен — старая
+            // запись без contactMs) — экран сравнения открывается сразу на ударе,
+            // а не на первом кадре подготовки к подаче (см. UX-аудит).
+            putExtra(ComparisonActivity.EXTRA_CONTACTS_MS, picked.map { it.contactMs ?: -1L }.toLongArray())
         })
     }
 

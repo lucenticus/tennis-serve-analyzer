@@ -32,6 +32,7 @@ class ComparisonActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_PATHS = "paths"
+        const val EXTRA_CONTACTS_MS = "contacts_ms"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,17 +40,26 @@ class ComparisonActivity : ComponentActivity() {
         val paths = intent.getStringArrayExtra(EXTRA_PATHS)?.toList().orEmpty()
             .filter { File(it).exists() }
         if (paths.isEmpty()) { finish(); return }
+        // Момент удара по мячу в каждом видео (-1/отсутствует для записей без contactMs —
+        // например, сделанных до появления этого поля). Индексы совпадают с paths.
+        val contactsMs = intent.getLongArrayExtra(EXTRA_CONTACTS_MS)
 
         setContent {
             // Стартовая скорость — та же, что и по умолчанию на экране анализа (0.3×):
             // техника лучше видна в замедлении, сразу с открытия экрана сравнения.
+            // Каждое видео сразу перематывается на СВОЙ момент контакта, а не начинается
+            // с первого кадра подготовки к подаче — чтобы деталь, которую обычно и хотят
+            // сравнить (сгиб локтя, положение кисти при ударе), была видна без ручной
+            // перемотки (см. UX-аудит по экрану сравнения).
             val players = remember {
-                paths.map { path ->
+                paths.mapIndexed { i, path ->
                     ExoPlayer.Builder(this).build().apply {
                         setMediaItem(MediaItem.fromUri(Uri.fromFile(File(path))))
                         repeatMode = Player.REPEAT_MODE_ALL
                         playbackParameters = PlaybackParameters(0.3f)
                         prepare()
+                        val contact = contactsMs?.getOrNull(i)
+                        if (contact != null && contact >= 0) seekTo(contact)
                     }
                 }
             }
@@ -57,7 +67,9 @@ class ComparisonActivity : ComponentActivity() {
 
             var isPlaying by remember { mutableStateOf(false) }
             var speed by remember { mutableStateOf(0.3f) }
-            var position by remember { mutableStateOf(0f) }
+            var position by remember {
+                mutableStateOf(contactsMs?.firstOrNull { it >= 0 }?.toFloat() ?: 0f)
+            }
             val duration = remember(players) {
                 players.maxOfOrNull { it.duration.coerceAtLeast(1L) } ?: 1L
             }

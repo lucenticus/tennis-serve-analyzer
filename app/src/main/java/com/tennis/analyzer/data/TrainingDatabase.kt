@@ -34,7 +34,12 @@ data class ServeHistoryEntry(
     val score: Int,             // оценка 0..100
     val tip: String?,           // главный совет
     val isLeftHanded: Boolean,
-    val durationMs: Long
+    val durationMs: Long,
+    // Момент удара по мячу внутри видео (мс от начала) — используется на экране
+    // сравнения, чтобы сразу показать сам удар, а не первый кадр. null для старых
+    // записей, сделанных до появления этого поля (миграция здесь не нужна —
+    // TrainingDatabase использует fallbackToDestructiveMigration).
+    val contactMs: Long? = null
 )
 
 @Dao
@@ -81,7 +86,7 @@ interface SessionDao {
 
 @Database(
     entities = [ServeResult::class, TrainingSession::class, ServeHistoryEntry::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class TrainingDatabase : RoomDatabase() {
