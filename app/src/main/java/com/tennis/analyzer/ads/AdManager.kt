@@ -30,10 +30,10 @@ import com.yandex.mobile.ads.interstitial.InterstitialAdLoader
  */
 object AdManager {
 
-    // Реклама временно отключена целиком (по просьбе во время UX-правок — интерстишиал
-    // после каждого возврата с экрана анализа постоянно перебивал ручное тестирование
-    // интерфейса). Чтобы вернуть рекламу — просто верни true.
-    const val ADS_ENABLED = false
+    // Реклама была временно отключена во время ручного UX-тестирования (интерстишиал
+    // после каждого возврата с экрана анализа перебивал тестирование интерфейса).
+    // Включена обратно перед релизом в RuStore.
+    const val ADS_ENABLED = true
 
     private const val INTERSTITIAL_UNIT_ID = "R-M-19853025-2"
     const val BANNER_UNIT_ID = "R-M-19853025-1"
